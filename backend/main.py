@@ -65,6 +65,11 @@ class RumorRequest(BaseModel):
     author_id: Optional[str] = None # Optional now, extracted from Token
     content: str
 
+class CommentRequest(BaseModel):
+    rumor_id: str
+    content: str
+    parent_id: Optional[str] = None
+
 # --- AUTH MIDDLEWARE ---
 
 def get_current_user_id(token: str = Depends(oauth2_scheme)):
@@ -277,6 +282,29 @@ def get_me(user_id: str = Depends(get_current_user_id)):
             "correct": u.get('correct_votes', 0)
         }
     }
+
+# 7. COMMENTS
+@app.get("/api/comments/{rumor_id}")
+def get_comments(rumor_id: str):
+    # Fetch comments with user details
+    # Supabase join syntax: comments(*, users(username, trust_score))
+    res = supabase.table("comments")\
+        .select("*, users(username, trust_score)")\
+        .eq("rumor_id", rumor_id)\
+        .order("created_at", desc=False)\
+        .execute()
+    return {"comments": res.data}
+
+@app.post("/api/comments")
+def post_comment(req: CommentRequest, user_id: str = Depends(get_current_user_id)):
+    data = {
+        "rumor_id": req.rumor_id,
+        "user_id": user_id,
+        "content": req.content,
+        "parent_id": req.parent_id
+    }
+    res = supabase.table("comments").insert(data).execute()
+    return {"message": "Comment Posted", "comment": res.data[0]}
 
 # --- INTERNAL HELPERS ---
 def update_rumor_status(rumor_id: str):

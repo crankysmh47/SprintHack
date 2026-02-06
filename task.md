@@ -21,4 +21,10 @@
         - [/] **Merge Updated UI (Phase 2)**:
             - [ ] Merge `origin/frontend-adil`.
             - [ ] Protect `LandingPage.tsx` (V2 Auth).
-            - [ ] Integrate new UI into `page.tsx`.ectory
+            - [ ] Integrate new UI into `page.tsx`.
+    - [/] **Comments System**:
+        - [x] Database: Create `comments` table (SQL ready).
+        - [x] Backend: POST /api/comments and GET /api/comments.
+        - [ ] Frontend: Comments UI and integration.
+    - [ ] **Phase 2: Advanced Features**:
+        - [ ] Truth Seeker & Liar Roles.
