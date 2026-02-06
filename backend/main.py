@@ -256,9 +256,74 @@ def verify_rumor_endpoint(rumor_id: str, verified_as: bool):
 # 5. FEED & RUMORS
 @app.get("/api/feed")
 def get_feed(user_id: Optional[str] = None):
-    # Retrieve rumors.
-    res = supabase.table("rumors").select("*").order("created_at", desc=True).limit(50).execute()
-    return {"rumors": res.data}
+    """
+    Ripple Protocol Feed:
+    - Distance 0 (Me): Show
+    - Distance 1 (Friends): Show
+    - Distance 2 (FoF): Show if verified OR High Trust (Ripple effect)
+    - Distance > 2: Hide unless Viral/Verified
+    """
+    # 1. Fetch raw rumors (limit 100 for efficiency)
+    res = supabase.table("rumors").select("*").order("created_at", desc=True).limit(100).execute()
+    all_rumors = res.data
+
+    # If no user_id, return public viral rumors only
+    if not user_id:
+        public_feed = [r for r in all_rumors if r.get("trust_score", 0) > 0.8]
+        return {"rumors": public_feed}
+
+    # 2. Filter using Graph Distance
+    filtered_feed = []
+
+    # Ensure graph is built
+    if engine.graph is None:
+        engine.build_trust_graph()
+
+    for rumor in all_rumors:
+        # A. Filter out Shadowbanned
+        if rumor.get("is_shadowbanned"):
+            continue
+
+        author_id = rumor.get("author_id")
+        trust_score = rumor.get("trust_score", 0.0)
+
+        try:
+            # Calculate Distance
+            if author_id == user_id:
+                distance = 0
+            elif engine.graph.has_node(user_id) and engine.graph.has_node(author_id):
+                try:
+                    distance = nx.shortest_path_length(engine.graph, source=user_id, target=author_id)
+                except nx.NetworkXNoPath:
+                    distance = 999
+            else:
+                distance = 999 # Disconnected
+
+            # B. Ripple Logic
+            should_show = False
+
+            if distance <= 1:
+                should_show = True # Close circle
+            elif distance == 2:
+                # Friends of friends: Show if it has some trust or is verified
+                if trust_score > 0.5 or rumor.get("verified_result") is not None:
+                    should_show = True
+            else:
+                # Outside circle: Only show if High Trust (Viral)
+                if trust_score > 0.8:
+                    should_show = True
+
+            if should_show:
+                rumor["distance"] = distance # Enrich for frontend
+                filtered_feed.append(rumor)
+
+        except Exception as e:
+            print(f"Feed Filter Error: {e}")
+            # Fallback: Show if viral
+            if trust_score > 0.8:
+                filtered_feed.append(rumor)
+
+    return {"rumors": filtered_feed}
 
 @app.post("/api/rumor")
 def create_rumor(rumor: RumorRequest, user_id: str = Depends(get_current_user_id)):
@@ -309,4 +374,18 @@ def post_comment(req: CommentRequest, user_id: str = Depends(get_current_user_id
 # --- INTERNAL HELPERS ---
 def update_rumor_status(rumor_id: str):
     # Call the math engine
-    engine.resolve_rumor(rumor_id)
+    result = engine.resolve_rumor(rumor_id)
+
+    # Update Supabase if we have a decisive result
+    if result["verified_result"] is not None:
+        supabase.table("rumors").update({
+            "verified_result": result["verified_result"],
+            "trust_score": result["trust_score"],
+            # If it just became verified, set the date
+            "verification_date": datetime.utcnow().isoformat()
+        }).eq("id", rumor_id).execute()
+    else:
+        # Even if uncertain, update the score so frontend sees progress
+        supabase.table("rumors").update({
+            "trust_score": result["trust_score"]
+        }).eq("id", rumor_id).execute()

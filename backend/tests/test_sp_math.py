@@ -4,7 +4,7 @@ from unittest.mock import MagicMock
 # MOCK Dependencies to run test without installing Supabase/DotEnv
 sys.modules["supabase"] = MagicMock()
 sys.modules["dotenv"] = MagicMock()
-sys.modules["os"] = MagicMock()
+# sys.modules["os"] = MagicMock() # Don't mock OS, it breaks platform/uuid in networkx
 
 # Now import the engine
 from backend.trust_engine import TrustEngine
@@ -14,6 +14,14 @@ class TestSPMath(unittest.TestCase):
     def setUp(self):
         # Patch the Supabase client inside the module if needed, 
         # but since we mocked the library, the module level init won't crash.
+
+        # Access the mock from the imported module
+        from backend.trust_engine import supabase as mock_supabase
+        mock_supabase.reset_mock()
+
+        # Make the DB call return empty data (so it doesn't return cached/shadowbanned result)
+        mock_supabase.table.return_value.select.return_value.eq.return_value.execute.return_value.data = []
+
         self.engine = TrustEngine()
         
         # Manually set an empty graph or mock it
