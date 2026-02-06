@@ -87,14 +87,36 @@ class TrustEngine:
         
         Returns: dict with prediction results and scores.
         """
+        # 0. Check Rumor Status (Immutability & Shadowban Check)
+        try:
+            r_res = supabase.table("rumors").select("verified_result, trust_score, is_shadowbanned").eq("id", rumor_id).execute()
+            if r_res.data:
+                rumor_data = r_res.data[0]
+
+                # A. Handle Shadowbanned/Deleted Rumors
+                if rumor_data.get("is_shadowbanned") is True:
+                     return {
+                        "status": "shadowbanned",
+                        "message": "This rumor has been removed/shadowbanned.",
+                        "verified_result": None,
+                        "trust_score": 0.0,
+                        "stats": {}
+                    }
+
+                # B. Immutability: If already strictly verified/disputed (result is NOT NULL), return stored result.
+                # This prevents historical facts from changing scores due to new graph states.
+                if rumor_data.get("verified_result") is not None:
+                     return {
+                        "status": "verified" if rumor_data["verified_result"] else "disputed",
+                        "verified_result": rumor_data["verified_result"],
+                        "trust_score": rumor_data["trust_score"],
+                        "stats": {"message": "Result Finalized"}
+                    }
+        except Exception as e:
+            print(f"Error checking rumor status: {e}")
+
         # 1. Fetch votes if not provided
         if votes is None:
-            # Fix for "Deleted Rumor" bug: Ensure we are NOT fetching votes for shadowbanned/deleted rumors
-            # However, typically we are resolving a specific rumor_id.
-            # The bug description "deleted rumors affecting trust scores" implies cross-contamination.
-            # By strictly querying `eq("rumor_id", rumor_id)`, we isolate this calculation.
-            # If the bug was about *user reputation* from deleted rumors, we would handle that in user scoring.
-            # Here, we just ensure we operate on clean data for this specific rumor.
             response = supabase.table("votes").select("*").eq("rumor_id", rumor_id).execute()
             votes = response.data
 
