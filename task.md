@@ -1,0 +1,4 @@
+- [ ] Create detailed DEV2_DATABASE_AUTH.md (Supabase, seed scripts, endpoints)
+- [ ] Create detailed DEV3_FRONTEND_UI.md (Next.js, UI components, state)
+- [ ] Create detailed DEV4_INTEGRATION.md (API client, glue code, testing)
+- [ ] Copy updated guides to project directory
