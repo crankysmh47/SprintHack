@@ -113,7 +113,7 @@ export function PostRumorModal({
             transition={{ type: 'spring', damping: 25, stiffness: 300 }}
             className="fixed bottom-0 left-0 right-0 z-50 max-h-[90vh] overflow-auto"
           >
-            <div className="max-w-lg mx-auto bg-white rounded-t-3xl shadow-2xl">
+            <div className="max-w-lg mx-auto bg-background rounded-t-3xl shadow-2xl">
               {/* Handle bar */}
               <div className="flex justify-center pt-3 pb-1">
                 <div className="w-10 h-1 bg-slate-300 rounded-full" />
@@ -122,8 +122,8 @@ export function PostRumorModal({
               {/* Header */}
               <div className="flex items-center justify-between px-6 py-4">
                 <div className="flex items-center gap-2">
-                  <Sparkles size={20} className="text-blue-500" />
-                  <h2 className="text-xl font-black text-slate-800">
+                  <Sparkles size={20} className="text-primary" />
+                  <h2 className="text-xl font-black text-foreground">
                     Drop a Rumor
                   </h2>
                 </div>
@@ -138,7 +138,7 @@ export function PostRumorModal({
               {/* Body */}
               <div className="px-6 pb-8 space-y-5">
                 {/* Info Banner */}
-                <div className="flex items-start gap-3 p-3 bg-blue-50 border border-blue-100 rounded-xl text-xs text-blue-700">
+                <div className="flex items-start gap-3 p-3 bg-primary/10 border border-primary/20 rounded-xl text-xs text-primary">
                   <AlertCircle size={16} className="mt-0.5 flex-shrink-0" />
                   <p>
                     Your rumor starts in <strong>Stage 1 (Trust Circle)</strong>.
@@ -160,11 +160,11 @@ export function PostRumorModal({
                     placeholder="What's happening on campus? Share what you've heard..."
                     rows={4}
                     className={cn(
-                      'w-full p-4 border-2 rounded-xl text-slate-800 placeholder:text-slate-400',
+                      'w-full p-4 border-2 rounded-xl text-foreground placeholder:text-muted-foreground bg-background',
                       'font-medium resize-none focus:outline-none transition',
                       isOverLimit
-                        ? 'border-red-300 focus:border-red-500'
-                        : 'border-slate-200 focus:border-blue-500'
+                        ? 'border-destructive focus:border-destructive'
+                        : 'border-border focus:border-primary'
                     )}
                   />
 
@@ -173,10 +173,10 @@ export function PostRumorModal({
                     className={cn(
                       'absolute bottom-3 right-3 text-xs font-bold tabular-nums',
                       isOverLimit
-                        ? 'text-red-500'
+                        ? 'text-destructive'
                         : remaining < 30
                           ? 'text-amber-500'
-                          : 'text-slate-300'
+                          : 'text-muted-foreground'
                     )}
                   >
                     {remaining}
@@ -188,7 +188,7 @@ export function PostRumorModal({
                   <motion.p
                     initial={{ opacity: 0, y: -5 }}
                     animate={{ opacity: 1, y: 0 }}
-                    className="text-red-500 text-sm font-medium flex items-center gap-1"
+                    className="text-destructive text-sm font-medium flex items-center gap-1"
                   >
                     <AlertCircle size={14} />
                     {error}
@@ -197,7 +197,7 @@ export function PostRumorModal({
 
                 {/* Tags */}
                 <div className="space-y-2">
-                  <div className="flex items-center gap-1.5 text-sm font-bold text-slate-600">
+                  <div className="flex items-center gap-1.5 text-sm font-bold text-muted-foreground">
                     <Hash size={14} />
                     Tags (optional, max 3)
                   </div>
@@ -211,8 +211,8 @@ export function PostRumorModal({
                           className={cn(
                             'px-3 py-1.5 rounded-full text-xs font-bold transition active:scale-95',
                             selected
-                              ? 'bg-blue-600 text-white shadow-sm'
-                              : 'bg-slate-100 text-slate-500 hover:bg-slate-200'
+                              ? 'bg-primary text-primary-foreground shadow-sm'
+                              : 'bg-secondary text-secondary-foreground hover:bg-secondary/80'
                           )}
                         >
                           #{tag}
@@ -230,8 +230,8 @@ export function PostRumorModal({
                     'w-full flex items-center justify-center gap-2 py-4 rounded-xl font-bold text-lg transition active:scale-[0.98]',
                     'shadow-lg',
                     submitting || isOverLimit || !content.trim()
-                      ? 'bg-slate-200 text-slate-400 cursor-not-allowed shadow-none'
-                      : 'bg-blue-600 text-white hover:bg-blue-700 shadow-blue-600/30'
+                      ? 'bg-muted text-muted-foreground cursor-not-allowed shadow-none'
+                      : 'bg-primary text-primary-foreground hover:bg-primary/90 shadow-primary/30'
                   )}
                 >
                   {submitting ? (

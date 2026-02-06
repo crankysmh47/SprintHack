@@ -22,17 +22,17 @@ const STAGE_CONFIG = {
   circle: {
     Icon: Eye,
     label: 'Local',
-    color: 'text-purple-500 bg-purple-50 dark:bg-purple-900/30 dark:text-purple-300',
+    color: 'text-purple-500 bg-purple-500/10',
   },
   neighbor: {
     Icon: Users,
     label: 'Neighbors',
-    color: 'text-blue-500 bg-blue-50 dark:bg-blue-900/30 dark:text-blue-300',
+    color: 'text-blue-500 bg-blue-500/10',
   },
   global: {
     Icon: Zap,
     label: 'Viral',
-    color: 'text-amber-500 bg-amber-50 dark:bg-amber-900/30 dark:text-amber-300',
+    color: 'text-amber-500 bg-amber-500/10',
   },
 } as const;
 
@@ -148,22 +148,22 @@ export function RumorCard({ rumor, onVote, isTop = true }: RumorCardProps) {
       className={cn(
         'relative w-full max-w-sm rounded-2xl shadow-2xl overflow-hidden',
         'flex flex-col cursor-grab active:cursor-grabbing',
-        'border-2 bg-white dark:bg-slate-900',
+        'border-2 bg-card/90 backdrop-blur-xl',
         rumor.verified_result === true
-          ? 'border-emerald-300 dark:border-emerald-800'
+          ? 'border-emerald-500/50'
           : rumor.verified_result === false
-            ? 'border-red-300 dark:border-red-800'
-            : 'border-slate-200 dark:border-slate-800'
+            ? 'border-red-500/50'
+            : 'border-border'
       )}
     >
       {/* Dynamic Background Tints */}
       <motion.div
         style={{ opacity: rightOpacity }}
-        className="absolute inset-0 bg-emerald-500 pointer-events-none z-0"
+        className="absolute inset-0 bg-emerald-500/20 pointer-events-none z-0"
       />
       <motion.div
         style={{ opacity: leftOpacity }}
-        className="absolute inset-0 bg-red-500 pointer-events-none z-0"
+        className="absolute inset-0 bg-red-500/20 pointer-events-none z-0"
       />
 
       {/* Swipe direction overlays (Text/Icons) */}
@@ -189,8 +189,8 @@ export function RumorCard({ rumor, onVote, isTop = true }: RumorCardProps) {
           className={cn(
             'relative z-10 mx-5 px-3 py-2 rounded-lg text-xs font-bold flex items-center gap-2',
             rumor.verified_result
-              ? 'bg-emerald-50 text-emerald-700 border border-emerald-200 dark:bg-emerald-900/30 dark:text-emerald-300 dark:border-emerald-800'
-              : 'bg-red-50 text-red-700 border border-red-200 dark:bg-red-900/30 dark:text-red-300 dark:border-red-800'
+              ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20'
+              : 'bg-red-500/10 text-red-600 dark:text-red-400 border border-red-500/20'
           )}
         >
           {rumor.verified_result ? (
@@ -209,13 +209,13 @@ export function RumorCard({ rumor, onVote, isTop = true }: RumorCardProps) {
 
       {/* ── Main Content ────────────────────────────── */}
       <div className="relative z-10 flex-1 flex items-center justify-center px-8 py-10 min-h-[220px]">
-        <p className="text-xl md:text-2xl font-bold text-center text-slate-800 dark:text-slate-100 leading-snug select-none">
+        <p className="text-xl md:text-2xl font-bold text-center text-foreground leading-snug select-none">
           {rumor.content}
         </p>
       </div>
 
       {/* ── Bottom Meta ─────────────────────────────── */}
-      <div className="relative z-10 px-5 pb-3 flex items-center justify-between text-xs text-slate-400 dark:text-slate-500">
+      <div className="relative z-10 px-5 pb-3 flex items-center justify-between text-xs text-muted-foreground">
         <div className="flex items-center gap-1">
           <Clock size={12} />
           {formatTimeAgo(rumor.created_at)}
@@ -232,7 +232,7 @@ export function RumorCard({ rumor, onVote, isTop = true }: RumorCardProps) {
           {rumor.tags.map((tag) => (
             <span
               key={tag}
-              className="px-2 py-0.5 bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 rounded-md text-xs font-medium"
+              className="px-2 py-0.5 bg-secondary/50 text-secondary-foreground rounded-md text-xs font-medium"
             >
               #{tag}
             </span>
@@ -241,21 +241,21 @@ export function RumorCard({ rumor, onVote, isTop = true }: RumorCardProps) {
       )}
 
       {/* ── Button fallbacks ─────────────────────────── */}
-      <div className="relative z-10 flex border-t border-slate-100 dark:border-slate-800 bg-white/50 dark:bg-slate-900/50 backdrop-blur-sm">
+      <div className="relative z-10 flex border-t border-border bg-card/50 backdrop-blur-sm">
         <button
           onClick={() => handleButtonVote('left')}
           className="flex-1 flex items-center justify-center gap-2 py-4
-                     text-red-500 font-bold hover:bg-red-50 dark:hover:bg-red-900/20
+                     text-red-500 font-bold hover:bg-red-500/10
                      transition active:scale-95"
         >
           <X size={20} strokeWidth={3} />
           FALSE
         </button>
-        <div className="w-px bg-slate-100 dark:bg-slate-800" />
+        <div className="w-px bg-border" />
         <button
           onClick={() => handleButtonVote('right')}
           className="flex-1 flex items-center justify-center gap-2 py-4
-                     text-emerald-500 font-bold hover:bg-emerald-50 dark:hover:bg-emerald-900/20
+                     text-emerald-500 font-bold hover:bg-emerald-500/10
                      transition active:scale-95"
         >
           <Check size={20} strokeWidth={3} />

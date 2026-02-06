@@ -19,9 +19,9 @@ export function Navbar({ userId, onLogout }: NavbarProps) {
     <nav className="fixed top-0 left-0 right-0 z-40 bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl border-b border-slate-100 dark:border-slate-800 transition-colors">
       <div className="max-w-xl mx-auto flex items-center justify-between px-4 py-3">
         <div className="flex items-center gap-2">
-          <Fingerprint size={24} className="text-blue-600 dark:text-blue-500" />
-          <span className="text-lg font-black tracking-tighter text-slate-900 dark:text-white">
-            TRUTH<span className="text-blue-600 dark:text-blue-500">OR</span>DARE
+          <Fingerprint size={24} className="text-primary dark:text-cyan-400" />
+          <span className="text-lg font-black tracking-widest text-foreground dark:text-white font-orbitron" style={{ fontFamily: 'var(--font-orbitron)' }}>
+            BLACK<span className="text-primary dark:text-cyan-400">BOX</span>
           </span>
         </div>
 

@@ -18,6 +18,8 @@ import { useRumors } from '@/lib/hooks/useRumors';
 import { useVote } from '@/lib/hooks/useVote';
 import { useToast } from '@/lib/hooks/useToast';
 import { Rumor, SwipeDirection } from '@/lib/types';
+import { ThreeBackground } from '@/components/ThreeBackground';
+import { TypewriterText } from '@/components/TypewriterText';
 
 export default function Home() {
   const [userId, setUserId] = useState<string | null>(null);
@@ -25,6 +27,8 @@ export default function Home() {
   const [showPostModal, setShowPostModal] = useState(false);
   const [mounted, setMounted] = useState(false);
   const [selectedRumor, setSelectedRumor] = useState<Rumor | null>(null);
+
+
 
   const { toasts, addToast, removeToast } = useToast();
 
@@ -47,6 +51,19 @@ export default function Home() {
     progress,
     refetch,
   } = useRumors(userId);
+
+  // GSAP Entry Animation
+  useEffect(() => {
+    if (mounted && !loading && rumors.length > 0) {
+      import("gsap").then((gsap) => {
+        gsap.default.fromTo(
+          ".rumor-feed-item",
+          { opacity: 0, y: 20 },
+          { opacity: 1, y: 0, duration: 0.5, stagger: 0.1, ease: "power2.out" }
+        );
+      });
+    }
+  }, [mounted, loading, rumors.length]);
 
   const { submitVote } = useVote(userId, {
     onSuccess: (response) => {
@@ -102,10 +119,20 @@ export default function Home() {
   }
 
   return (
-    <div className="min-h-screen bg-slate-50 dark:bg-slate-950 transition-colors">
+    <div className="min-h-screen transition-colors relative overflow-hidden">
+      <ThreeBackground />
       <Navbar userId={userId} onLogout={handleLogout} />
 
-      <main className="container max-w-2xl mx-auto pt-20 pb-24 px-4">
+      <main className="container max-w-2xl mx-auto pt-24 pb-24 px-4 relative z-10">
+        {/* Hero / Greeting */}
+        <div className="mb-8 text-center">
+          <h1 className="text-4xl md:text-5xl font-bold mb-2 font-orbitron tracking-wider text-foreground">
+            <TypewriterText text="ENTER THE BLACKBOX" delay={100} />
+          </h1>
+          <p className="text-muted-foreground">
+            Where secrets originate.
+          </p>
+        </div>
         {/* Stats Header */}
         <div className="mb-6">
           <StatsBar
@@ -121,11 +148,12 @@ export default function Home() {
         <div className="space-y-4">
           {rumors.length > 0 ? (
             rumors.map((rumor) => (
-              <RumorFeedItem
-                key={rumor.id}
-                rumor={rumor}
-                onClick={() => setSelectedRumor(rumor)}
-              />
+              <div key={rumor.id} className="rumor-feed-item opacity-0">
+                <RumorFeedItem
+                  rumor={rumor}
+                  onClick={() => setSelectedRumor(rumor)}
+                />
+              </div>
             ))
           ) : (
             <EmptyState
@@ -139,7 +167,7 @@ export default function Home() {
       {/* FAB: Post Rumor */}
       <button
         onClick={() => setShowPostModal(true)}
-        className="fixed bottom-6 right-6 w-14 h-14 bg-blue-600 dark:bg-blue-500 text-white rounded-full shadow-lg shadow-blue-600/30 flex items-center justify-center hover:bg-blue-700 dark:hover:bg-blue-600 transition active:scale-95 z-30"
+        className="fixed bottom-6 right-6 w-14 h-14 bg-primary text-primary-foreground rounded-full shadow-lg shadow-primary/30 flex items-center justify-center hover:bg-primary/90 transition active:scale-95 z-30"
         title="Post a new rumor"
       >
         <Plus size={28} strokeWidth={2.5} />
@@ -152,7 +180,7 @@ export default function Home() {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm"
+            className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-background/80 backdrop-blur-sm"
             onClick={(e) => {
               if (e.target === e.currentTarget) setSelectedRumor(null);
             }}
@@ -164,7 +192,7 @@ export default function Home() {
             >
               <button
                 onClick={() => setSelectedRumor(null)}
-                className="absolute -top-12 right-0 p-2 text-white/80 hover:text-white bg-white/10 hover:bg-white/20 rounded-full transition"
+                className="absolute -top-12 right-0 p-2 text-foreground/80 hover:text-foreground bg-background/50 hover:bg-background/80 rounded-full transition border border-border"
               >
                 <X size={24} />
               </button>
