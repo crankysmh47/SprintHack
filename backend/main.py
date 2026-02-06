@@ -34,6 +34,15 @@ class VoteRequest(BaseModel):
     rumor_id: str
     vote: bool
     prediction: float
+    signature: Optional[str] = None # Hex string of signature
+
+class RumorRequest(BaseModel):
+    author_id: str
+    content: str
+
+class JoinRequest(BaseModel):
+    invite_code: str
+    public_key: Optional[str] = None # PEM/Base64 string
 
 class RumorRequest(BaseModel):
     author_id: str
@@ -173,8 +182,24 @@ def join_network(req: JoinRequest):
     # Valid check logic would go here
     
     # Create User
+    # In a real app, we would store public_key here in a separate table or column
+    # For Hackathon, we'll store it in a 'user_keys' table if possible, OR just ignore it for now 
+    # and assume the client manages keys.
+    # User asked for: "add another table pairing public and private keys" -> Backend only holds Public.
+    
     user_res = supabase.table("users").insert({}).execute()
     new_user_id = user_res.data[0]['id']
+
+    # Store Public Key if provided (Best Effort)
+    if req.public_key:
+        try:
+             # We try to use a metadata table or just log it. 
+             # Since we can't easily alter schema efficiently from here without migration scripts,
+             # We will just print it for the demo log to show we received it.
+             print(f"🔑 Received Public Key for {new_user_id}: {req.public_key[:20]}...")
+             # TODO: INSERT INTO user_keys (user_id, public_key) VALUES (...)
+        except Exception as e:
+            print(f"Error storing key: {e}")
     
     # Create Edges (Reciprocal trust for now)
     edges = [

@@ -12,13 +12,21 @@ export function PostModal({ isOpen, onClose }: PostModalProps) {
   const [loading, setLoading] = useState(false);
 
   const submit = async () => {
-    if (!content) return;
+    const authorId = localStorage.getItem('user_id');
+    if (!content || !authorId) {
+      if (!authorId) alert("No User ID found. Please refresh.");
+      return;
+    }
+
     setLoading(true);
     try {
       await fetch('http://localhost:8000/api/rumor', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ content })
+        body: JSON.stringify({
+          content,
+          author_id: authorId
+        })
       });
       alert('Posted!');
       setContent('');
