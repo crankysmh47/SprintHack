@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 import { RumorCard } from '@/components/RumorCard';
 import { PostModal } from '@/components/PostModal';
 import { LandingPage } from '@/components/LandingPage';
-import { generateKeys, signVote } from '@/lib/crypto';
+import { generateKeys, signVote } from '../lib/crypto';
 import { LogOut } from 'lucide-react';
 
 interface Rumor {
