@@ -1,27 +1,186 @@
 @import "tailwindcss";
 
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
+
+@theme {
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+
+  --radius-lg: var(--radius);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-sm: calc(var(--radius) - 4px);
+
+  --animate-accordion-down: accordion-down 0.2s ease-out;
+  --animate-accordion-up: accordion-up 0.2s ease-out;
+  --animate-slide-up: slideUp 0.3s ease-out;
+
+  @keyframes accordion-down {
+    from {
+      height: 0;
+    }
+
+    to {
+      height: var(--radix-accordion-content-height);
+    }
+  }
+
+  @keyframes accordion-up {
+    from {
+      height: var(--radix-accordion-content-height);
+    }
+
+    to {
+      height: 0;
+    }
+  }
+
+  @keyframes slideUp {
+    from {
+      transform: translateY(100%);
+      opacity: 0;
+    }
+
+    to {
+      transform: translateY(0);
+      opacity: 1;
+    }
   }
 }
 
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+
+/* ── Custom Theme Variables ──────────────────────── */
+@layer base {
+  :root {
+    --background: 0 0% 100%;
+    /* #ffffff */
+    --foreground: 222.2 84% 4.9%;
+    /* #020817 */
+
+    --card: 0 0% 100%;
+    /* #ffffff */
+    --card-foreground: 222.2 84% 4.9%;
+    /* #020817 */
+
+    --popover: 0 0% 100%;
+    /* #ffffff */
+    --popover-foreground: 222.2 84% 4.9%;
+    /* #020817 */
+
+    --primary: 221.2 83.2% 53.3%;
+    /* #2563eb (Blue-600) */
+    --primary-foreground: 210 40% 98%;
+    /* #f8fafc */
+
+    --secondary: 210 40% 96.1%;
+    /* #f1f5f9 (Slate-100) */
+    --secondary-foreground: 222.2 47.4% 11.2%;
+    /* #0f172a */
+
+    --muted: 210 40% 96.1%;
+    /* #f1f5f9 */
+    --muted-foreground: 215.4 16.3% 46.9%;
+    /* #64748b */
+
+    --accent: 210 40% 96.1%;
+    /* #f1f5f9 */
+    --accent-foreground: 222.2 47.4% 11.2%;
+    /* #0f172a */
+
+    --destructive: 0 84.2% 60.2%;
+    /* #ef4444 */
+    --destructive-foreground: 210 40% 98%;
+    /* #f8fafc */
+
+    --border: 214.3 31.8% 91.4%;
+    /* #e2e8f0 */
+    --input: 214.3 31.8% 91.4%;
+    /* #e2e8f0 */
+    --ring: 221.2 83.2% 53.3%;
+    /* #2563eb */
+
+    --radius: 1rem;
+  }
+
+  .dark {
+    --background: 222.2 84% 4.9%;
+    /* #020817 (Slate-950) */
+    --foreground: 210 40% 98%;
+    /* #f8fafc (Slate-50) */
+
+    --card: 222.2 84% 4.9%;
+    /* #020817 */
+    --card-foreground: 210 40% 98%;
+    /* #f8fafc */
+
+    --popover: 222.2 84% 4.9%;
+    --popover-foreground: 210 40% 98%;
+
+    --primary: 217.2 91.2% 59.8%;
+    /* #3b82f6 (Blue-500) */
+    --primary-foreground: 222.2 47.4% 11.2%;
+
+    --secondary: 217.2 32.6% 17.5%;
+    /* #1e293b (Slate-800) */
+    --secondary-foreground: 210 40% 98%;
+
+    --muted: 217.2 32.6% 17.5%;
+    --muted-foreground: 215 20.2% 65.1%;
+    /* #94a3b8 */
+
+    --accent: 217.2 32.6% 17.5%;
+    --accent-foreground: 210 40% 98%;
+
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 210 40% 98%;
+
+    --border: 217.2 32.6% 17.5%;
+    --input: 217.2 32.6% 17.5%;
+    --ring: 224.3 76.3% 48%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+
+  body {
+    @apply bg-background text-foreground antialiased;
+    font-feature-settings: "rlig" 1, "calt" 1;
+  }
+}
+
+/* ── Custom Utilities ────────────────────────────────────── */
+@layer utilities {
+  .glass {
+    @apply bg-white/70 dark:bg-slate-900/70 backdrop-blur-lg border border-white/20 dark:border-slate-800/50 shadow-xl;
+  }
+
+  .glass-card {
+    @apply bg-card/50 backdrop-blur-md border border-border shadow-sm;
+  }
 }

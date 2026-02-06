@@ -1,127 +1,266 @@
+// components/RumorCard.tsx
+
 'use client';
 
-import { motion, useMotionValue, useTransform, PanInfo } from 'framer-motion';
 import { useState } from 'react';
-import { Check, X } from 'lucide-react';
+import {
+  motion,
+  useMotionValue,
+  useTransform,
+  type PanInfo,
+  AnimatePresence,
+} from 'framer-motion';
+import { Check, X, Clock, Users, Zap, Eye } from 'lucide-react';
+import type { Rumor, SwipeDirection } from '@/lib/types';
+import { cn, formatTimeAgo, triggerHaptic } from '@/lib/utils';
+import { TrustBadge } from './TrustBadge';
+import { SwipeIndicator } from './SwipeIndicator';
+import { PredictionSlider } from './PredictionSlider';
 
-interface Rumor {
-  id: string;
-  content: string;
-  verified_result: boolean | null;
-  trust_score: number;
-}
+// ── Stage configuration ─────────────────────────────────
+const STAGE_CONFIG = {
+  circle: {
+    Icon: Eye,
+    label: 'Local',
+    color: 'text-purple-500 bg-purple-50 dark:bg-purple-900/30 dark:text-purple-300',
+  },
+  neighbor: {
+    Icon: Users,
+    label: 'Neighbors',
+    color: 'text-blue-500 bg-blue-50 dark:bg-blue-900/30 dark:text-blue-300',
+  },
+  global: {
+    Icon: Zap,
+    label: 'Viral',
+    color: 'text-amber-500 bg-amber-50 dark:bg-amber-900/30 dark:text-amber-300',
+  },
+} as const;
 
+// ── Props ────────────────────────────────────────────────
 interface RumorCardProps {
   rumor: Rumor;
-  onVote: (direction: 'left' | 'right', prediction: number) => void;
+  onVote: (direction: SwipeDirection, prediction: number) => void;
+  isTop?: boolean;
 }
 
-export function RumorCard({ rumor, onVote }: RumorCardProps) {
-  const [showSlider, setShowSlider] = useState(false);
-  const [prediction, setPrediction] = useState(50);
-  const [swipeDirection, setSwipeDirection] =
-    useState<'left' | 'right' | null>(null);
+export function RumorCard({ rumor, onVote, isTop = true }: RumorCardProps) {
+  const [phase, setPhase] = useState<'swipe' | 'predict'>('swipe');
+  const [swipeDirection, setSwipeDirection] = useState<SwipeDirection>(null);
+  const [isExiting, setIsExiting] = useState(false);
 
-  // Motion physics
+  // ── Motion values ───────────────────────────────────
   const x = useMotionValue(0);
-  const rotate = useTransform(x, [-200, 200], [-25, 25]);
-  const opacity = useTransform(x, [-200, -100, 0, 100, 200], [0, 1, 1, 1, 0]);
-
-  const bg = useTransform(
+  const rotate = useTransform(x, [-300, 0, 300], [-25, 0, 25]);
+  const cardOpacity = useTransform(
     x,
-    [-150, 0, 150],
-    ['rgb(254, 226, 226)', 'rgb(255,255,255)', 'rgb(220, 252, 231)']
+    [-300, -150, 0, 150, 300],
+    [0.5, 1, 1, 1, 0.5]
   );
 
-  const handleDragEnd = (_: any, info: PanInfo) => {
-    if (info.offset.x > 100) {
+  // Tint opacity based on drag
+  const rightOpacity = useTransform(x, [0, 150], [0, 0.2]);
+  const leftOpacity = useTransform(x, [-150, 0], [0.2, 0]);
+
+  // ── Handlers ────────────────────────────────────────
+  const handleDragEnd = (_event: MouseEvent | TouchEvent | PointerEvent, info: PanInfo) => {
+    const SWIPE_THRESHOLD = 100;
+    const VELOCITY_THRESHOLD = 500;
+
+    const swipedRight =
+      info.offset.x > SWIPE_THRESHOLD ||
+      info.velocity.x > VELOCITY_THRESHOLD;
+    const swipedLeft =
+      info.offset.x < -SWIPE_THRESHOLD ||
+      info.velocity.x < -VELOCITY_THRESHOLD;
+
+    if (swipedRight) {
+      triggerHaptic('medium');
       setSwipeDirection('right');
-      setShowSlider(true);
-    } else if (info.offset.x < -100) {
+      setPhase('predict');
+    } else if (swipedLeft) {
+      triggerHaptic('medium');
       setSwipeDirection('left');
-      setShowSlider(true);
+      setPhase('predict');
     }
+    // If neither threshold met, card snaps back automatically
   };
 
-  const submitVote = () => {
-    if (!swipeDirection) return;
-    onVote(swipeDirection, prediction / 100);
+  const handlePredict = (prediction: number) => {
+    triggerHaptic('heavy');
+    setIsExiting(true);
+
+    setTimeout(() => {
+      onVote(swipeDirection, prediction);
+    }, 300);
   };
 
-  // 🎚️ Prediction Step
-  if (showSlider) {
+  const handleCancelPredict = () => {
+    setPhase('swipe');
+    setSwipeDirection(null);
+    x.set(0);
+  };
+
+  const handleButtonVote = (dir: 'left' | 'right') => {
+    triggerHaptic('medium');
+    setSwipeDirection(dir);
+    setPhase('predict');
+  };
+
+  // ── Resolve stage config ────────────────────────────
+  const stageKey = rumor.stage || 'global';
+  const stage = STAGE_CONFIG[stageKey];
+  const StageIcon = stage.Icon;
+
+  // ── PREDICTION PHASE ──────────────────────────────────
+  if (phase === 'predict' && swipeDirection) {
     return (
-      <div className="w-full max-w-sm p-6 bg-white rounded-xl shadow-xl space-y-6 animate-in fade-in zoom-in">
-        <h3 className="text-xl font-bold text-center">Prediction Check</h3>
-        <p className="text-center text-gray-500 text-sm">
-          What percentage of students agree with you?
-        </p>
-
-        <input
-          type="range"
-          min={0}
-          max={100}
-          value={prediction}
-          onChange={(e) => setPrediction(Number(e.target.value))}
-          className="w-full accent-blue-600"
-        />
-
-        <div className="text-center text-3xl font-black text-blue-600">
-          {prediction}%
-        </div>
-
-        <button
-          onClick={submitVote}
-          className="w-full py-3 bg-black text-white rounded-lg font-bold hover:bg-gray-800 transition"
-        >
-          Confirm Vote
-        </button>
-      </div>
+      <AnimatePresence>
+        {!isExiting && (
+          <PredictionSlider
+            direction={swipeDirection}
+            onConfirm={handlePredict}
+            onCancel={handleCancelPredict}
+          />
+        )}
+      </AnimatePresence>
     );
   }
 
-  // 🃏 Swipe Card
+  // ── SWIPE PHASE ───────────────────────────────────────
   return (
     <motion.div
-      style={{ x, rotate, opacity, backgroundColor: bg }}
-      drag="x"
+      style={{
+        x,
+        rotate,
+        opacity: cardOpacity,
+      }}
+      drag={isTop ? 'x' : false}
       dragConstraints={{ left: 0, right: 0 }}
+      dragElastic={0.9}
       onDragEnd={handleDragEnd}
-      className={`relative w-full max-w-sm h-96 rounded-2xl shadow-2xl p-8 
-        flex items-center justify-center text-center cursor-grab active:cursor-grabbing
-        border-4 ${
-          rumor.verified_result === true
-            ? 'border-yellow-400'
-            : rumor.verified_result === false
-            ? 'border-red-400'
-            : 'border-transparent'
-        }`}
+      initial={{ scale: 0.95, opacity: 0 }}
+      animate={{ scale: 1, opacity: 1 }}
+      exit={{
+        x: swipeDirection === 'right' ? 500 : swipeDirection === 'left' ? -500 : 0,
+        opacity: 0,
+        transition: { duration: 0.3 },
+      }}
+      className={cn(
+        'relative w-full max-w-sm rounded-2xl shadow-2xl overflow-hidden',
+        'flex flex-col cursor-grab active:cursor-grabbing',
+        'border-2 bg-white dark:bg-slate-900',
+        rumor.verified_result === true
+          ? 'border-emerald-300 dark:border-emerald-800'
+          : rumor.verified_result === false
+            ? 'border-red-300 dark:border-red-800'
+            : 'border-slate-200 dark:border-slate-800'
+      )}
     >
+      {/* Dynamic Background Tints */}
+      <motion.div
+        style={{ opacity: rightOpacity }}
+        className="absolute inset-0 bg-emerald-500 pointer-events-none z-0"
+      />
+      <motion.div
+        style={{ opacity: leftOpacity }}
+        className="absolute inset-0 bg-red-500 pointer-events-none z-0"
+      />
+
+      {/* Swipe direction overlays (Text/Icons) */}
+      <SwipeIndicator x={x} />
+
+      {/* ── Top Bar ─────────────────────────────────── */}
+      <div className="relative z-10 flex items-center justify-between px-5 pt-5 pb-2">
+        <div
+          className={cn(
+            'flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold',
+            stage.color
+          )}
+        >
+          <StageIcon size={12} />
+          {stage.label}
+        </div>
+        <TrustBadge score={rumor.trust_score} size="sm" />
+      </div>
+
+      {/* ── Verification Banner ─────────────────────── */}
       {rumor.verified_result !== null && (
         <div
-          className={`absolute top-4 px-3 py-1 rounded-full text-xs font-bold ${
+          className={cn(
+            'relative z-10 mx-5 px-3 py-2 rounded-lg text-xs font-bold flex items-center gap-2',
             rumor.verified_result
-              ? 'bg-yellow-400 text-yellow-900'
-              : 'bg-red-100 text-red-700'
-          }`}
+              ? 'bg-emerald-50 text-emerald-700 border border-emerald-200 dark:bg-emerald-900/30 dark:text-emerald-300 dark:border-emerald-800'
+              : 'bg-red-50 text-red-700 border border-red-200 dark:bg-red-900/30 dark:text-red-300 dark:border-red-800'
+          )}
         >
-          {rumor.verified_result ? '✓ Verified Truth' : '✗ Disputed'}
+          {rumor.verified_result ? (
+            <>
+              <Check size={14} strokeWidth={3} />
+              Verified by SP Algorithm
+            </>
+          ) : (
+            <>
+              <X size={14} strokeWidth={3} />
+              Disputed
+            </>
+          )}
         </div>
       )}
 
-      <h2 className="text-2xl font-bold text-slate-800 select-none">
-        {rumor.content}
-      </h2>
+      {/* ── Main Content ────────────────────────────── */}
+      <div className="relative z-10 flex-1 flex items-center justify-center px-8 py-10 min-h-[220px]">
+        <p className="text-xl md:text-2xl font-bold text-center text-slate-800 dark:text-slate-100 leading-snug select-none">
+          {rumor.content}
+        </p>
+      </div>
 
-      <div className="absolute bottom-6 flex gap-12">
-        <div className="flex flex-col items-center text-red-500 opacity-50">
-          <X size={32} />
-          <span className="text-xs font-bold">FALSE</span>
+      {/* ── Bottom Meta ─────────────────────────────── */}
+      <div className="relative z-10 px-5 pb-3 flex items-center justify-between text-xs text-slate-400 dark:text-slate-500">
+        <div className="flex items-center gap-1">
+          <Clock size={12} />
+          {formatTimeAgo(rumor.created_at)}
         </div>
-        <div className="flex flex-col items-center text-green-600 opacity-50">
-          <Check size={32} />
-          <span className="text-xs font-bold">TRUE</span>
+        <div className="flex items-center gap-1">
+          <Users size={12} />
+          {rumor.vote_count} votes
         </div>
+      </div>
+
+      {/* ── Tags ─────────────────────────────────────── */}
+      {rumor.tags && rumor.tags.length > 0 && (
+        <div className="relative z-10 px-5 pb-4 flex flex-wrap gap-1.5">
+          {rumor.tags.map((tag) => (
+            <span
+              key={tag}
+              className="px-2 py-0.5 bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 rounded-md text-xs font-medium"
+            >
+              #{tag}
+            </span>
+          ))}
+        </div>
+      )}
+
+      {/* ── Button fallbacks ─────────────────────────── */}
+      <div className="relative z-10 flex border-t border-slate-100 dark:border-slate-800 bg-white/50 dark:bg-slate-900/50 backdrop-blur-sm">
+        <button
+          onClick={() => handleButtonVote('left')}
+          className="flex-1 flex items-center justify-center gap-2 py-4
+                     text-red-500 font-bold hover:bg-red-50 dark:hover:bg-red-900/20
+                     transition active:scale-95"
+        >
+          <X size={20} strokeWidth={3} />
+          FALSE
+        </button>
+        <div className="w-px bg-slate-100 dark:bg-slate-800" />
+        <button
+          onClick={() => handleButtonVote('right')}
+          className="flex-1 flex items-center justify-center gap-2 py-4
+                     text-emerald-500 font-bold hover:bg-emerald-50 dark:hover:bg-emerald-900/20
+                     transition active:scale-95"
+        >
+          <Check size={20} strokeWidth={3} />
+          TRUE
+        </button>
       </div>
     </motion.div>
   );

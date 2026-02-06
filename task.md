@@ -2,3 +2,19 @@
 - [ ] Create detailed DEV3_FRONTEND_UI.md (Next.js, UI components, state)
 - [ ] Create detailed DEV4_INTEGRATION.md (API client, glue code, testing)
 - [ ] Copy updated guides to project directory
+
+- [/] **Phase 7: Professional Trust System (MAJOR UPGRADE) - V2**
+    - [x] **Database Schema**:
+        - [x] Create `invites` table.
+        - [x] Update `users` (invite_code, invited_by, trust_score).
+        - [x] Update `votes` (vote_weight, was_correct).
+        - [x] Update `rumors` (verification_date).
+        - [x] Triggers for Trust Score Calculation.
+    - [x] **Backend V2**:
+        - [x] JWT Authentication.
+        - [x] Strict Invite System (GENESIS).
+        - [x] Weighted Voting Logic.
+        - [x] Trust Propagation (PageRank/EigenTrust).
+    - [/] **Frontend V2**:
+        - [/] Merge Remote UI Branch.
+        - [x] Fix Build Errors (page.tsx).ectory
