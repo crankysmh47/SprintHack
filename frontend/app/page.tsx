@@ -4,33 +4,29 @@ import { useEffect, useState, useCallback } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 import { Plus, X } from 'lucide-react';
 
-// UI Components from Remote Branch
-import { RumorCard } from '@/components/RumorCard'; // Assuming this exists or merged
+// UI Components from Remote Branch and Local
+import { RumorCard } from '@/components/RumorCard';
 import { RumorFeedItem } from '@/components/RumorFeedItem';
 import { PostRumorModal } from '@/components/PostRumorModal';
 import { LoadingScreen } from '@/components/LoadingScreen';
 import { EmptyState } from '@/components/EmptyState';
-import { UserSetupModal } from '@/components/UserSetupModel'; // Typos in remote branch? 'Model' vs 'Modal'
 import { Navbar } from '@/components/Navbar';
 import { StatsBar } from '@/components/StatsBar';
 import { ToastContainer } from '@/components/Toast';
+import { ThreeBackground } from '@/components/ThreeBackground';
+import { TypewriterText } from '@/components/TypewriterText';
 
-// Hooks from Remote Branch
+// Hooks
 import { useRumors } from '@/lib/hooks/useRumors';
 import { useVote } from '@/lib/hooks/useVote';
 import { useToast } from '@/lib/hooks/useToast';
 import { Rumor, SwipeDirection } from '@/lib/types';
 
-// V2 Auth / Crypto Imports (Restored from my branch)
+// V2 Auth / Crypto Imports
 import { generateKeys, signVote, exportKey } from '@/lib/crypto';
-import { LandingPage } from '@/components/LandingPage'; // Using my V2 Landing Page for Auth entry
+import { LandingPage } from '@/components/LandingPage';
 
 export default function Home() {
-  // We need to decide: Do we use the Remote's "UserSetupModal" or my "LandingPage"?
-  // My LandingPage has the V2 Auth (Password/Encryption). 
-  // Remote's UserSetupModal likely just takes a username.
-  // STRATEGY: Use V2 LandingPage for initial Auth, then switch to Remote's Feed UI.
-
   const [userId, setUserId] = useState<string | null>(null);
   const [showPostModal, setShowPostModal] = useState(false);
   const [mounted, setMounted] = useState(false);
@@ -38,10 +34,11 @@ export default function Home() {
 
   // V2 Auth State
   const [view, setView] = useState<'landing' | 'feed'>('landing');
+  const [privateKey, setPrivateKey] = useState<CryptoKey | null>(null);
 
   const { toasts, addToast, removeToast } = useToast();
 
-  // Load user on mount
+  // Load user on mount (V2 Auth Check)
   useEffect(() => {
     setMounted(true);
     const storedId = localStorage.getItem('user_id');
@@ -55,14 +52,7 @@ export default function Home() {
     }
   }, []);
 
-  // Use Remote's Hooks for Feed Logic
-  // But we need to ensure they send the right headers?
-  // I might need to patch `useRumors` and `useVote` later if they don't use the JWT.
-  // For now, let's assume they are standard fetches and we might need to intercept or just hope cookies?
-  // Wait, `useVote` likely doesn't send JWT.
-  // I will have to patch `useVote` hook in a separate step if it fails. 
-  // For this merge, I will rely on the Remote's structure but try to wrap it.
-
+  // Hook for Feed Data
   const {
     rumors,
     loading,
@@ -70,30 +60,16 @@ export default function Home() {
     userTrustRank,
     progress,
     refetch,
-  } = useRumors(userId); // This hook might need the JWT passed to it?
+  } = useRumors(userId);
 
-  // Re-implementing Vote Logic to use my V2 Crypto + JWT
-  // I'll ignore the remote's `useVote` for the actual API call, but use its event handlers?
-  // Actually, rewriting `useVote` is cleaner. 
-  // Let's use the Remote's UI `handleVote` flow but inject my V2 logic.
-
+  // V2 Vote Logic (Crypto Signed)
   const handleVoteV2 = async (direction: SwipeDirection, prediction: number) => {
     if (!selectedRumor || !userId) return;
 
     try {
-      // 1. Crypto Sign
-      // We need the private key. Where is it?
-      // In V2 `LandingPage`, we decrypt it. 
-      // But we didn't store it in Global State here!
-      // `LandingPage` passed it to `onJoin`.
-      // We need to store it in State here.
-      // I will add `privateKey` state back.
-
-      // See `handleJoin` below.
-
       const token = localStorage.getItem('token');
 
-      // Ephemeral Key Strategy (from my V2)
+      // Ephemeral Key Strategy (V2)
       const [ephPub, ephPriv] = await generateKeys();
       const signature = await signVote(ephPriv, selectedRumor.id);
       const pubKeyStr = await exportKey(ephPub);
@@ -122,8 +98,7 @@ export default function Home() {
 
       const data = await res.json();
 
-      // Success Feedback (Adapted from Remote)
-      // We use their toast system
+      // Success Feedback
       addToast('success', 'Vote Signed & Verified', 'Trust Score Updated');
 
       // Close modal
@@ -134,10 +109,20 @@ export default function Home() {
     }
   };
 
+  // GSAP Entry Animation (From Remote UI)
+  useEffect(() => {
+    if (mounted && !loading && rumors.length > 0) {
+      import("gsap").then((gsap) => {
+        gsap.default.fromTo(
+          ".rumor-feed-item",
+          { opacity: 0, y: 20 },
+          { opacity: 1, y: 0, duration: 0.5, stagger: 0.1, ease: "power2.out" }
+        );
+      });
+    }
+  }, [mounted, loading, rumors.length]);
 
-  // Setup Auth Handler
-  const [privateKey, setPrivateKey] = useState<CryptoKey | null>(null);
-
+  // V2 Auth Handlers
   const handleJoinV2 = (newUserId: string, keys: CryptoKey[]) => {
     localStorage.setItem('user_id', newUserId);
     setUserId(newUserId);
@@ -170,10 +155,21 @@ export default function Home() {
   }
 
   return (
-    <div className="min-h-screen bg-slate-50 dark:bg-slate-950 transition-colors">
+    <div className="min-h-screen transition-colors relative overflow-hidden">
+      <ThreeBackground />
       <Navbar userId={userId} onLogout={handleLogout} />
 
-      <main className="container max-w-2xl mx-auto pt-20 pb-24 px-4">
+      <main className="container max-w-2xl mx-auto pt-24 pb-24 px-4 relative z-10">
+        {/* Hero / Greeting */}
+        <div className="mb-8 text-center">
+          <h1 className="text-4xl md:text-5xl font-bold mb-2 font-orbitron tracking-wider text-foreground">
+            <TypewriterText text="ENTER THE BLACKBOX" delay={100} />
+          </h1>
+          <p className="text-muted-foreground">
+            Where secrets originate.
+          </p>
+        </div>
+
         {/* Stats Header */}
         <div className="mb-6">
           <StatsBar
@@ -189,11 +185,12 @@ export default function Home() {
         <div className="space-y-4">
           {rumors.length > 0 ? (
             rumors.map((rumor) => (
-              <RumorFeedItem
-                key={rumor.id}
-                rumor={rumor}
-                onClick={() => setSelectedRumor(rumor)}
-              />
+              <div key={rumor.id} className="rumor-feed-item opacity-0">
+                <RumorFeedItem
+                  rumor={rumor}
+                  onClick={() => setSelectedRumor(rumor)}
+                />
+              </div>
             ))
           ) : (
             <EmptyState
@@ -207,7 +204,7 @@ export default function Home() {
       {/* FAB: Post Rumor */}
       <button
         onClick={() => setShowPostModal(true)}
-        className="fixed bottom-6 right-6 w-14 h-14 bg-blue-600 dark:bg-blue-500 text-white rounded-full shadow-lg shadow-blue-600/30 flex items-center justify-center hover:bg-blue-700 dark:hover:bg-blue-600 transition active:scale-95 z-30"
+        className="fixed bottom-6 right-6 w-14 h-14 bg-primary text-primary-foreground rounded-full shadow-lg shadow-primary/30 flex items-center justify-center hover:bg-primary/90 transition active:scale-95 z-30"
         title="Post a new rumor"
       >
         <Plus size={28} strokeWidth={2.5} />
@@ -220,7 +217,7 @@ export default function Home() {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm"
+            className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-background/80 backdrop-blur-sm"
             onClick={(e) => {
               if (e.target === e.currentTarget) setSelectedRumor(null);
             }}
@@ -232,7 +229,7 @@ export default function Home() {
             >
               <button
                 onClick={() => setSelectedRumor(null)}
-                className="absolute -top-12 right-0 p-2 text-white/80 hover:text-white bg-white/10 hover:bg-white/20 rounded-full transition"
+                className="absolute -top-12 right-0 p-2 text-foreground/80 hover:text-foreground bg-background/50 hover:bg-background/80 rounded-full transition border border-border"
               >
                 <X size={24} />
               </button>

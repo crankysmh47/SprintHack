@@ -22,23 +22,23 @@ export function RumorFeedItem({ rumor, onClick }: RumorFeedItemProps) {
         <motion.div
             layoutId={`rumor-card-${rumor.id}`}
             onClick={onClick}
-            className="group relative cursor-pointer overflow-hidden rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-4 transition-all hover:bg-slate-50 dark:hover:bg-slate-800/50 hover:shadow-md hover:border-blue-200 dark:hover:border-blue-900"
+            className="group relative cursor-pointer overflow-hidden rounded-xl border border-border/50 bg-card/40 backdrop-blur-md p-4 transition-all hover:bg-card/60 hover:shadow-lg hover:shadow-primary/5 hover:border-primary/30"
         >
             <div className="flex gap-4">
                 {/* Vote Sidebar (Visual only for now in feed) */}
-                <div className="flex flex-col items-center gap-1 text-slate-400 dark:text-slate-500">
-                    <ArrowBigUp className="w-6 h-6 group-hover:text-orange-500 transition-colors" />
-                    <span className="text-sm font-bold text-slate-700 dark:text-slate-300">
+                <div className="flex flex-col items-center gap-1 text-muted-foreground">
+                    <ArrowBigUp className="w-6 h-6 group-hover:text-amber-500 transition-colors" />
+                    <span className="text-sm font-bold text-foreground">
                         {rumor.vote_count}
                     </span>
-                    <ArrowBigDown className="w-6 h-6 group-hover:text-blue-500 transition-colors" />
+                    <ArrowBigDown className="w-6 h-6 group-hover:text-primary transition-colors" />
                 </div>
 
                 {/* Content */}
                 <div className="flex-1 space-y-2">
                     {/* Metadata Header */}
-                    <div className="flex items-center gap-2 text-xs text-slate-500 dark:text-slate-400">
-                        <span className="flex items-center gap-1 font-medium text-blue-600 dark:text-blue-400">
+                    <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                        <span className="flex items-center gap-1 font-medium text-primary">
                             <ShieldCheck size={14} />
                             Trust {Math.round(rumor.trust_score * 100)}%
                         </span>
@@ -47,26 +47,26 @@ export function RumorFeedItem({ rumor, onClick }: RumorFeedItemProps) {
                             <Clock size={14} />
                             {timeAgo}
                         </span>
-                        <span className="ml-auto px-2 py-0.5 rounded-full bg-slate-100 dark:bg-slate-800 text-xs font-mono uppercase">
+                        <span className="ml-auto px-2 py-0.5 rounded-full bg-secondary text-secondary-foreground text-xs font-mono uppercase">
                             {rumor.stage}
                         </span>
                     </div>
 
                     {/* Main Content */}
                     <div className="prose dark:prose-invert max-w-none">
-                        <p className="text-base sm:text-lg font-medium leading-snug line-clamp-3 text-slate-800 dark:text-slate-100">
+                        <p className="text-base sm:text-lg font-medium leading-snug line-clamp-3 text-foreground">
                             {rumor.content}
                         </p>
                     </div>
 
                     {/* Footer Actions */}
                     <div className="flex items-center gap-4 pt-2">
-                        <button className="flex items-center gap-1.5 text-xs font-medium text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800 px-2 py-1.5 rounded-md transition-colors">
+                        <button className="flex items-center gap-1.5 text-xs font-medium text-muted-foreground hover:bg-secondary/50 px-2 py-1.5 rounded-md transition-colors">
                             <MessageSquare size={16} />
                             <span>Discuss</span>
                         </button>
                         {rumor.tags?.map((tag) => (
-                            <span key={tag} className="text-xs text-slate-400 bg-slate-50 dark:bg-slate-800/50 px-2 py-1 rounded-full border border-slate-100 dark:border-slate-800">
+                            <span key={tag} className="text-xs text-muted-foreground bg-secondary/30 px-2 py-1 rounded-full border border-border/50">
                                 #{tag}
                             </span>
                         ))}

@@ -1,6 +1,4 @@
-// components/StatsBar.tsx
-
-'use client';
+"use client";
 
 import { motion } from 'framer-motion';
 import { TrustBadge } from './TrustBadge';
@@ -33,24 +31,28 @@ export function StatsBar({
         </motion.div>
       )}
 
-      {/* Progress bar */}
-      <div className="flex items-center gap-3">
-        <div className="flex-1 h-2 bg-slate-200 rounded-full overflow-hidden">
-          <motion.div
-            initial={{ width: 0 }}
-            animate={{ width: `${progress}%` }}
-            transition={{ type: 'spring', damping: 20 }}
-            className="h-full bg-gradient-to-r from-blue-500 to-blue-600 rounded-full"
-          />
-        </div>
-        <span className="text-xs font-bold text-slate-400 tabular-nums min-w-[3rem] text-right">
-          {currentIndex}/{total}
-        </span>
+      {/* Trust Rank Header */}
+      <div className="flex justify-between text-xs font-semibold text-muted-foreground mb-1.5 uppercase tracking-wide">
+        <span>Trust Database</span>
+        <span className="text-primary">{Math.round(trustRank * 100)}% Synced</span>
       </div>
 
-      {/* Trust rank */}
+      {/* Progress Track */}
+      <div className="h-2 w-full bg-secondary rounded-full overflow-hidden">
+        <motion.div
+          initial={{ width: 0 }}
+          animate={{ width: `${Math.min(progress, 100)}%` }} // Ensure progress is clamped
+          transition={{ duration: 1, ease: "circOut" }}
+          className={`h-full rounded-full ${usingMockData ? 'bg-amber-500' : 'bg-primary'}`}
+          style={{
+            boxShadow: '0 0 10px rgba(0,240,255,0.5)'
+          }}
+        />
+      </div>
+
+      {/* Trust Badge Footer */}
       <div className="flex items-center justify-between">
-        <span className="text-xs text-slate-400 font-medium">Your Trust Rank</span>
+        <span className="text-xs text-muted-foreground font-medium">Your Trust Rank</span>
         <TrustBadge score={trustRank} size="sm" showLabel />
       </div>
     </div>

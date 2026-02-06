@@ -20,10 +20,10 @@ const icons = {
 };
 
 const styles = {
-  success: 'bg-emerald-50 border-emerald-200 text-emerald-800',
-  error: 'bg-red-50 border-red-200 text-red-800',
-  info: 'bg-blue-50 border-blue-200 text-blue-800',
-  warning: 'bg-yellow-50 border-yellow-200 text-yellow-800',
+  success: 'bg-primary/10 border-primary/20 text-primary',
+  error: 'bg-destructive/10 border-destructive/20 text-destructive',
+  info: 'bg-secondary border-secondary/50 text-secondary-foreground',
+  warning: 'bg-amber-500/10 border-amber-500/20 text-amber-600 dark:text-amber-400',
 };
 
 export function ToastContainer({ toasts, onRemove }: ToastProps) {

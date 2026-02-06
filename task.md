@@ -16,5 +16,9 @@
         - [x] Weighted Voting Logic.
         - [x] Trust Propagation (PageRank/EigenTrust).
     - [/] **Frontend V2**:
-        - [/] Merge Remote UI Branch.
-        - [x] Fix Build Errors (page.tsx).ectory
+        - [x] Merge Remote UI Branch (Initial).
+        - [x] Fix Build Errors (page.tsx).
+        - [/] **Merge Updated UI (Phase 2)**:
+            - [ ] Merge `origin/frontend-adil`.
+            - [ ] Protect `LandingPage.tsx` (V2 Auth).
+            - [ ] Integrate new UI into `page.tsx`.ectory
