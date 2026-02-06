@@ -3,11 +3,12 @@ from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from typing import Optional
 import os
+import networkx as nx
 from dotenv import load_dotenv
 from supabase import create_client
 
 # Import our Math Engine
-from trust_engine import engine
+from .trust_engine import engine
 
 load_dotenv()
 
@@ -151,7 +152,12 @@ def get_feed(user_id: str):
             pass # Graph error, treat as far
             
         r["distance"] = dist
-        feed_with_distance.append(r)
+        
+        # THE RIPPLE PROTOCOL:
+        # 1. Close neighbors (Distance <= 2) can see it.
+        # 2. Verified rumors (Viral) can be seen by everyone.
+        if dist <= 2 or r['verified_result'] is not None:
+            feed_with_distance.append(r)
     
     return {"rumors": feed_with_distance}
 
@@ -181,6 +187,26 @@ def join_network(req: JoinRequest):
     engine.build_trust_graph()
     
     return {"message": "Welcome to the network", "user_id": new_user_id}
+
+@app.get("/api/generate-invite/{user_id}")
+def generate_invite_link(user_id: str):
+    """
+    Generate a shareable invite link for a user.
+    invite_code is effectively the user_id.
+    """
+    # Verify user exists
+    user_check = supabase.table("users").select("id").eq("id", user_id).execute()
+    if len(user_check.data) == 0:
+        raise HTTPException(status_code=404, detail="User not found")
+    
+    # Generate invite link (in production, this would be a short code)
+    # Using localhost:3000 for frontend URL
+    invite_link = f"http://localhost:3000/join?code={user_id}"
+    
+    return {
+        "invite_link": invite_link,
+        "invite_code": user_id
+    }
 
 # --- Internal Tasks ---
 
