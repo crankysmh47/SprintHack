@@ -19,7 +19,8 @@ export default function Home() {
   const [modalOpen, setModalOpen] = useState(false);
 
   // Fetch rumors & user ID
-  /*useEffect(() => {
+  /*--------------------------------------------------
+  useEffect(() => {
     let storedId = localStorage.getItem('user_id');
 
     if (!storedId) {
@@ -41,7 +42,10 @@ export default function Home() {
           setLoading(false);
         });
     }
-  }, []);*/
+  }, []);*/ //------------------------use this when we connect api
+
+  //comment out this area
+  //---------------from here
   useEffect(() => {
   let storedId = localStorage.getItem('user_id');
 
@@ -65,7 +69,7 @@ export default function Home() {
     setRumors(mockRumors);
     setLoading(false);
   }, 500); // 0.5s delay
-  }, []);
+  }, []); //-----------------------till here
 
 
   // Handle vote submission
