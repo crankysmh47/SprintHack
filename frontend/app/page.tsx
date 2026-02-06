@@ -1,158 +1,192 @@
+// app/page.tsx
+
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
+import { AnimatePresence, motion } from 'framer-motion';
+import { Plus, X } from 'lucide-react';
 import { RumorCard } from '@/components/RumorCard';
-import { PostModal } from '@/components/PostModal';
-
-interface Rumor {
-  id: string;
-  content: string;
-  verified_result: boolean | null;
-  trust_score: number;
-}
+import { RumorFeedItem } from '@/components/RumorFeedItem';
+import { PostRumorModal } from '@/components/PostRumorModal';
+import { LoadingScreen } from '@/components/LoadingScreen';
+import { EmptyState } from '@/components/EmptyState';
+import { UserSetupModal } from '@/components/UserSetupModel';
+import { Navbar } from '@/components/Navbar';
+import { StatsBar } from '@/components/StatsBar';
+import { ToastContainer } from '@/components/Toast';
+import { useRumors } from '@/lib/hooks/useRumors';
+import { useVote } from '@/lib/hooks/useVote';
+import { useToast } from '@/lib/hooks/useToast';
+import { Rumor, SwipeDirection } from '@/lib/types';
 
 export default function Home() {
-  const [rumors, setRumors] = useState<Rumor[]>([]);
-  const [currentIndex, setCurrentIndex] = useState(0);
-  const [loading, setLoading] = useState(true);
   const [userId, setUserId] = useState<string | null>(null);
-  const [modalOpen, setModalOpen] = useState(false);
+  const [showSetup, setShowSetup] = useState(false);
+  const [showPostModal, setShowPostModal] = useState(false);
+  const [mounted, setMounted] = useState(false);
+  const [selectedRumor, setSelectedRumor] = useState<Rumor | null>(null);
 
-  // Fetch rumors & user ID
-  /*--------------------------------------------------
+  const { toasts, addToast, removeToast } = useToast();
+
+  // Load user on mount
   useEffect(() => {
-    let storedId = localStorage.getItem('user_id');
-
-    if (!storedId) {
-      storedId = prompt('Enter your User ID (from seed script):') || '';
-      if (storedId) localStorage.setItem('user_id', storedId);
+    setMounted(true);
+    const stored = localStorage.getItem('user_id');
+    if (stored) {
+      setUserId(stored);
+    } else {
+      setShowSetup(true);
     }
+  }, []);
 
-    setUserId(storedId);
+  const {
+    rumors,
+    loading,
+    usingMockData,
+    userTrustRank,
+    progress,
+    refetch,
+  } = useRumors(userId);
 
-    if (storedId) {
-      fetch(`http://localhost:8000/api/feed?user_id=${storedId}`)
-        .then((res) => res.json())
-        .then((data) => {
-          setRumors(data.rumors || []);
-          setLoading(false);
-        })
-        .catch((err) => {
-          console.error(err);
-          setLoading(false);
-        });
-    }
-  }, []);*/ //------------------------use this when we connect api
+  const { submitVote } = useVote(userId, {
+    onSuccess: (response) => {
+      const ig = response.sp_result.information_gain;
+      if (ig > 1.5) {
+        addToast('info', 'Surprisingly Popular!', 'Your vote carried extra weight — the SP algorithm detected hidden knowledge.');
+      } else {
+        addToast('success', 'Vote recorded', `Trust score updated to ${Math.round(response.new_trust_score * 100)}%`);
+      }
+      // Close modal on success
+      setTimeout(() => setSelectedRumor(null), 300);
+    },
+    onError: () => {
+      addToast('warning', 'Vote saved locally', 'Backend is offline — your vote will sync when it reconnects.');
+      setSelectedRumor(null);
+    },
+  });
 
-  //comment out this area
-  //---------------from here
-  useEffect(() => {
-  let storedId = localStorage.getItem('user_id');
+  const handleVote = useCallback(
+    async (direction: SwipeDirection, prediction: number) => {
+      if (!selectedRumor || !direction) return;
+      await submitVote(selectedRumor.id, direction, prediction);
+    },
+    [selectedRumor, submitVote]
+  );
 
-  if (!storedId) {
-    storedId = prompt('Enter your User ID (mock):') || 'user123';
-    localStorage.setItem('user_id', storedId);
-  }
-
-  setUserId(storedId);
-
-  // MOCK DATA
-  const mockRumors: Rumor[] = [
-    { id: '1', content: 'Aliens exist', verified_result: null, trust_score: 0.5 },
-    { id: '2', content: 'Pineapple belongs on pizza', verified_result: true, trust_score: 0.9 },
-    { id: '3', content: 'The Earth is flat', verified_result: false, trust_score: 0.2 },
-    { id: '4', content: 'Dogs can talk', verified_result: null, trust_score: 0.1 },
-  ];
-
-  // Simulate API delay
-  setTimeout(() => {
-    setRumors(mockRumors);
-    setLoading(false);
-  }, 500); // 0.5s delay
-  }, []); //-----------------------till here
-
-
-  // Handle vote submission
-  const handleVote = async (
-    direction: 'left' | 'right',
-    prediction: number
-  ) => {
-    if (!userId || !rumors[currentIndex]) return;
-
-    const payload = {
-      user_id: userId,
-      rumor_id: rumors[currentIndex].id,
-      vote: direction === 'right',
-      prediction,
-    };
-
-    console.log('Submitting:', payload);
-
-    try {
-      await fetch('http://localhost:8000/api/vote', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload),
-      });
-
-      setCurrentIndex((i) => i + 1);
-    } catch {
-      alert('Vote failed');
-    }
+  const handleUserSetup = (newUserId: string) => {
+    setUserId(newUserId);
+    setShowSetup(false);
+    addToast('success', 'Welcome to the Gauntlet!', `Logged in as ${newUserId}`);
   };
 
-  // Loading state
-  if (loading)
-    return (
-      <div className="flex h-screen items-center justify-center">
-        Loading rumors...
-      </div>
-    );
+  const handleLogout = () => {
+    localStorage.removeItem('user_id');
+    setUserId(null);
+    setShowSetup(true);
+  };
 
-  // Missing user ID
-  if (!userId) return <div className="p-10">User ID required</div>;
+  const handlePostSuccess = () => {
+    addToast('success', 'Rumor posted!', 'It\'s now live in your Trust Circle (Stage 1).');
+    refetch();
+  };
 
-  // All rumors done
-  if (currentIndex >= rumors.length)
-    return (
-      <div className="flex h-screen items-center justify-center">
-        No more rumors. Go study 📚
-      </div>
-    );
+  // Hydration guard
+  if (!mounted) return null;
+
+  if (showSetup || !userId) {
+    return <UserSetupModal onComplete={handleUserSetup} />;
+  }
+
+  if (loading) {
+    return <LoadingScreen />;
+  }
 
   return (
-    <main className="flex min-h-screen flex-col items-center justify-center bg-slate-100 p-4 overflow-hidden">
-      {/* Header */}
-      <div className="mb-8 text-center">
-        <h1 className="text-3xl font-black tracking-tight">
-          TRUTH OR DARE
-        </h1>
-        <p className="text-slate-500">
-          Swipe right if true. Left if false.
-        </p>
-      </div>
+    <div className="min-h-screen bg-slate-50 dark:bg-slate-950 transition-colors">
+      <Navbar userId={userId} onLogout={handleLogout} />
 
-      {/* Swipe Card */}
-      <div className="relative w-full max-w-sm h-96">
-        <RumorCard
-          key={rumors[currentIndex].id} // remounts card on change
-          rumor={rumors[currentIndex]}
-          onVote={handleVote}
-        />
-      </div>
+      <main className="container max-w-2xl mx-auto pt-20 pb-24 px-4">
+        {/* Stats Header */}
+        <div className="mb-6">
+          <StatsBar
+            progress={progress}
+            currentIndex={0} // Not relevant in feed mode
+            total={rumors.length}
+            trustRank={userTrustRank}
+            usingMockData={usingMockData}
+          />
+        </div>
 
-      {/* Post Rumor Button */}
-      <div className="mt-10">
-        <button
-          onClick={() => setModalOpen(true)}
-          className="flex items-center gap-2 px-6 py-3 bg-blue-600 text-white rounded-full shadow-lg font-bold hover:bg-blue-700 transition"
-        >
-          <span>+</span> Post Rumor
-        </button>
-      </div>
+        {/* Feed */}
+        <div className="space-y-4">
+          {rumors.length > 0 ? (
+            rumors.map((rumor) => (
+              <RumorFeedItem
+                key={rumor.id}
+                rumor={rumor}
+                onClick={() => setSelectedRumor(rumor)}
+              />
+            ))
+          ) : (
+            <EmptyState
+              onRefresh={refetch}
+              onPost={() => setShowPostModal(true)}
+            />
+          )}
+        </div>
+      </main>
 
-      {/* Post Modal */}
-      <PostModal isOpen={modalOpen} onClose={() => setModalOpen(false)} />
-    </main>
+      {/* FAB: Post Rumor */}
+      <button
+        onClick={() => setShowPostModal(true)}
+        className="fixed bottom-6 right-6 w-14 h-14 bg-blue-600 dark:bg-blue-500 text-white rounded-full shadow-lg shadow-blue-600/30 flex items-center justify-center hover:bg-blue-700 dark:hover:bg-blue-600 transition active:scale-95 z-30"
+        title="Post a new rumor"
+      >
+        <Plus size={28} strokeWidth={2.5} />
+      </button>
+
+      {/* Swipe Modal Overlay */}
+      <AnimatePresence>
+        {selectedRumor && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm"
+            onClick={(e) => {
+              if (e.target === e.currentTarget) setSelectedRumor(null);
+            }}
+          >
+            <motion.div
+              layoutId={`rumor-card-${selectedRumor.id}`}
+              className="relative w-full max-w-sm"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <button
+                onClick={() => setSelectedRumor(null)}
+                className="absolute -top-12 right-0 p-2 text-white/80 hover:text-white bg-white/10 hover:bg-white/20 rounded-full transition"
+              >
+                <X size={24} />
+              </button>
+
+              <RumorCard
+                rumor={selectedRumor}
+                onVote={handleVote}
+                isTop={true}
+              />
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      <PostRumorModal
+        isOpen={showPostModal}
+        onClose={() => setShowPostModal(false)}
+        userId={userId}
+        onSuccess={handlePostSuccess}
+      />
+
+      <ToastContainer toasts={toasts} onRemove={removeToast} />
+    </div>
   );
 }
