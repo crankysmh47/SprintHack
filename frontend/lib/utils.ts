@@ -28,14 +28,14 @@ export function triggerHaptic(type: 'light' | 'medium' | 'heavy' | 'success' | '
 }
 
 export function getTrustColor(score: number): string {
-    if (score >= 0.8) return 'text-emerald-700 dark:text-emerald-300';
-    if (score >= 0.4) return 'text-blue-700 dark:text-blue-300';
+    if (score >= 0.8) return 'text-blue-700 dark:text-blue-300';
+    if (score >= 0.4) return 'text-blue-600 dark:text-blue-400';
     if (score >= 0.2) return 'text-amber-700 dark:text-amber-300';
     return 'text-red-700 dark:text-red-300';
 }
 
 export function getTrustBgColor(score: number): string {
-    if (score >= 0.8) return 'bg-emerald-50 dark:bg-emerald-900/30 border-emerald-200 dark:border-emerald-800';
+    if (score >= 0.8) return 'bg-blue-50 dark:bg-blue-900/30 border-blue-200 dark:border-blue-800';
     if (score >= 0.4) return 'bg-blue-50 dark:bg-blue-900/30 border-blue-200 dark:border-blue-800';
     if (score >= 0.2) return 'bg-amber-50 dark:bg-amber-900/30 border-amber-200 dark:border-amber-800';
     return 'bg-red-50 dark:bg-red-900/30 border-red-200 dark:border-red-800';

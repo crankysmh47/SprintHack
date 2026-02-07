@@ -111,7 +111,7 @@ export function CommentsSection({ rumorId, defaultOpen = false }: CommentsSectio
                                     >
                                         <div className="flex items-center justify-between mb-2">
                                             <div className="flex items-center gap-2">
-                                                <div className="w-5 h-5 rounded-full bg-gradient-to-br from-purple-500/20 to-blue-500/20 flex items-center justify-center border border-white/10">
+                                                <div className="w-5 h-5 rounded-full bg-gradient-to-br from-blue-500/20 to-blue-500/20 flex items-center justify-center border border-white/10">
                                                     <User size={10} className="text-muted-foreground" />
                                                 </div>
                                                 <span className="text-xs font-bold text-gray-200">
@@ -119,7 +119,7 @@ export function CommentsSection({ rumorId, defaultOpen = false }: CommentsSectio
                                                 </span>
                                                 {/* Trust Score Mini Badge */}
                                                 {comment.users && (
-                                                    <span className={`text-[10px] px-1.5 py-0.5 rounded-full ${comment.users.trust_score >= 0.7 ? 'bg-emerald-500/10 text-emerald-400' : 'bg-red-500/10 text-red-400'
+                                                    <span className={`text-[10px] px-1.5 py-0.5 rounded-full ${comment.users.trust_score >= 0.7 ? 'bg-blue-500/10 text-blue-400' : 'bg-red-500/10 text-red-400'
                                                         }`}>
                                                         {Math.round(comment.users.trust_score * 100)}% Trust
                                                     </span>

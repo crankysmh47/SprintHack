@@ -125,9 +125,9 @@
     --popover: 240 10% 3.9%;
     --popover-foreground: 0 0% 98%;
 
-    --primary: 190 100% 50%;
-    /* #00f0ff - Cyan/Electric Blue */
-    --primary-foreground: 240 5.9% 10%;
+    --primary: 217 91% 60%;
+    /* #60a5fa - Blue-400 for consistency */
+    --primary-foreground: 240 10% 3.9%;
     /* Dark text on cyan */
 
     --secondary: 240 3.7% 15.9%;

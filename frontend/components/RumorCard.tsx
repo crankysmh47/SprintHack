@@ -23,7 +23,7 @@ const STAGE_CONFIG = {
   circle: {
     Icon: Eye,
     label: 'Local',
-    color: 'text-purple-500 bg-purple-500/10',
+    color: 'text-blue-600 bg-blue-600/10',
   },
   neighbor: {
     Icon: Users,
@@ -152,7 +152,7 @@ export function RumorCard({ rumor, onVote, isTop = true, defaultOpenComments = f
         'flex flex-col cursor-grab active:cursor-grabbing',
         'border-2 bg-card/90 backdrop-blur-xl',
         rumor.verified_result === true
-          ? 'border-emerald-500/50'
+          ? 'border-blue-500/50'
           : rumor.verified_result === false
             ? 'border-red-500/50'
             : 'border-border'
@@ -161,7 +161,7 @@ export function RumorCard({ rumor, onVote, isTop = true, defaultOpenComments = f
       {/* Dynamic Background Tints */}
       <motion.div
         style={{ opacity: rightOpacity }}
-        className="absolute inset-0 bg-emerald-500/20 pointer-events-none z-0"
+        className="absolute inset-0 bg-blue-500/20 pointer-events-none z-0"
       />
       <motion.div
         style={{ opacity: leftOpacity }}
@@ -191,7 +191,7 @@ export function RumorCard({ rumor, onVote, isTop = true, defaultOpenComments = f
           className={cn(
             'relative z-10 mx-5 px-3 py-2 rounded-lg text-xs font-bold flex items-center gap-2',
             rumor.verified_result
-              ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20'
+              ? 'bg-blue-500/10 text-blue-600 dark:text-blue-400 border border-blue-500/20'
               : 'bg-red-500/10 text-red-600 dark:text-red-400 border border-red-500/20'
           )}
         >

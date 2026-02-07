@@ -54,7 +54,7 @@ export function Navbar({ userId, onLogout }: NavbarProps) {
                       navigator.clipboard.writeText(url);
                       alert(`Invite Link Copied!\nCode: ${code}`);
                     }}
-                    className="p-2 text-emerald-500 hover:text-emerald-400 hover:bg-emerald-500/10 rounded-full transition"
+                    className="p-2 text-blue-500 hover:text-blue-400 hover:bg-blue-500/10 rounded-full transition"
                     title="Copy Invite Link"
                   >
                     <UserPlus size={18} />
