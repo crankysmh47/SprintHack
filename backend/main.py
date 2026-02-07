@@ -100,32 +100,17 @@ from fastapi.responses import FileResponse
 from pathlib import Path
 
 # Static Path Resolution
-# app/backend/main.py -> app/frontend/out
-BASE_DIR = Path(__file__).resolve().parent
-FRONTEND_DIR = BASE_DIR.parent / "frontend" / "out"
+# Robust Search for Frontend
+found_frontend_dir = None
+print("🔍 Searching for frontend build (index.html)...")
+for root, dirs, files in os.walk("/app"):
+    if "index.html" in files and "_next" in dirs:
+        found_frontend_dir = Path(root)
+        print(f"✅ FOUND Frontend at: {found_frontend_dir}")
+        break
 
-print(f"📂 Checking for frontend at: {FRONTEND_DIR}")
-
-# DEBUG: Print file system structure
-print("--- FILE SYSTEM DEBUG ---")
-try:
-    for root, dirs, files in os.walk("/app"):
-        level = root.replace("/app", "").count(os.sep)
-        indent = " " * 4 * (level)
-        print(f"{indent}{os.path.basename(root)}/")
-        subindent = " " * 4 * (level + 1)
-        # Limit file printing to avoid huge logs
-        for f in files[:5]:
-            print(f"{subindent}{f}")
-        if len(files) > 5:
-            print(f"{subindent}... ({len(files)-5} more)")
-except Exception as e:
-    print(f"Could not walk /app: {e}")
-print("-------------------------")
-
-# Mount Static Files if they exist
-if FRONTEND_DIR.exists():
-    print("✅ Frontend found! Mounting...")
+if found_frontend_dir:
+    FRONTEND_DIR = found_frontend_dir
     app.mount("/_next", StaticFiles(directory=str(FRONTEND_DIR / "_next")), name="next")
     
     @app.get("/")
@@ -138,15 +123,15 @@ if FRONTEND_DIR.exists():
         return FileResponse(str(FRONTEND_DIR / "index.html"))
 
 else:
-    print("⚠️ Frontend NOT found. Running in API-only mode.")
-    # Fallback if frontend build failed or path is wrong
+    print("❌ Critical: Frontend NOT found in /app recursive search.")
+    # Fallback
     @app.get("/")
     def root_fallback():
         return {
             "status": "active", 
             "mode": "api_only",
-            "message": "Frontend not found. Please check build or path.",
-            "search_path": str(FRONTEND_DIR)
+            "message": "Frontend not found after recursive search.",
+            "search_path": "/app"
         }
 
 @app.get("/api/health")

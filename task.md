@@ -38,6 +38,7 @@
     - [ ] **Deployment**:
           - [x] Leapcell Configuration (Build Type, Start Command).
           - [x] Dependencies (Added cryptography).
+          - [x] Robust Path Resolution (Recursive Search).
         - [ ] **Pagination & Sorting**:
             - [ ] Backend: Support `skip`, `limit`, `sort_by` in `/api/rumors`.
             - [ ] Frontend: Top 10 rumors per page.
