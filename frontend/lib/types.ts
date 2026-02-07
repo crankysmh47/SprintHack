@@ -9,6 +9,7 @@ export interface Rumor {
     stage?: 'circle' | 'neighbor' | 'global';
     vote_count?: number;
     tags?: string[];
+    is_trap?: boolean;
 }
 
 export interface Comment {

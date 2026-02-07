@@ -210,5 +210,49 @@ class TrustEngine:
             }
         }
 
+    # ... (existing methods)
+
+    def get_graph_visual_data(self):
+        """
+        Returns JSON structure for React Force Graph 2D.
+        Nodes: {id, type (GENESIS/HIGH_TRUST/LOW_TRUST), val (trust_score)}
+        Links: {source, target}
+        """
+        if not self.graph:
+            self.build_trust_graph()
+        
+        if not self.trust_ranks:
+            self.calculate_trust_ranks()
+
+        GENESIS_IDS = [
+            "d8c20526-0158-45b6-993d-9d41334c0628", # Example Admin 1
+            "123e4567-e89b-12d3-a456-426614174000"  # Example Admin 2
+        ]
+
+        nodes = []
+        links = []
+
+        # 1. Build Nodes
+        for node_id in self.graph.nodes():
+            score = self.trust_ranks.get(node_id, 0.0)
+            
+            node_type = "LOW_TRUST"
+            if node_id in GENESIS_IDS:
+                node_type = "GENESIS"
+            elif score > 0.0005: 
+                node_type = "HIGH_TRUST"
+            
+            nodes.append({
+                "id": node_id,
+                "type": node_type,
+                "val": score
+            })
+
+        # 2. Build Links
+        for u, v in self.graph.edges():
+            links.append({"source": u, "target": v})
+
+        return {"nodes": nodes, "links": links}
+
 # Global Instance
 engine = TrustEngine()

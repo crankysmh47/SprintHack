@@ -29,6 +29,11 @@
     - [x] **Game Logic & Rules (New)**:
         - [x] **Verification Tiers**: Implement vote count thresholds per stage (Circle/Neighbor/Global) in `trust_engine.py`.
         - [x] **Invite Privileges**: Enforce `Trust Score > 0.7` for generating invite codes.
+    - [x] **Security & Anti-Bot (Honeypot)**:
+        - [x] **Database**: Add `is_trap` to rumors, `is_banned` to users.
+        - [x] **Backend**: Implement `verify_user_status` middleware.
+        - [x] **Backend**: Implement Trap Logic in `POST /api/vote`.
+        - [x] **Frontend**: Filter out trap rumors in UI.
     - [ ] **Phase 2: Advanced Features**:
         - [ ] **Pagination & Sorting**:
             - [ ] Backend: Support `skip`, `limit`, `sort_by` in `/api/rumors`.

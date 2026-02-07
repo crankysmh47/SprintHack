@@ -206,23 +206,28 @@ export default function Home() {
         {/* Feed */}
         <div className="space-y-4">
           {rumors.length > 0 ? (
-            rumors.map((rumor) => (
-              // ... existing mapping (unchanged) -> actually I need to preserve the inner code.
-              // Since I'm replacing the block, I must re-include the mapping logic exactly.
-              <div key={rumor.id} className="rumor-feed-item opacity-0">
-                <RumorFeedItem
-                  rumor={rumor}
-                  onClick={() => {
-                    setSelectedRumor(rumor);
-                    setAutoOpenComments(false);
-                  }}
-                  onDiscuss={() => {
-                    setSelectedRumor(rumor);
-                    setAutoOpenComments(true);
-                  }}
-                />
-              </div>
-            ))
+            rumors.map((rumor) => {
+              if (rumor.is_trap) return null; // HONEYPOT: Trap rumors are invisible to humans
+
+              return (
+
+                // ... existing mapping (unchanged) -> actually I need to preserve the inner code.
+                // Since I'm replacing the block, I must re-include the mapping logic exactly.
+                <div key={rumor.id} className="rumor-feed-item opacity-0">
+                  <RumorFeedItem
+                    rumor={rumor}
+                    onClick={() => {
+                      setSelectedRumor(rumor);
+                      setAutoOpenComments(false);
+                    }}
+                    onDiscuss={() => {
+                      setSelectedRumor(rumor);
+                      setAutoOpenComments(true);
+                    }}
+                  />
+                </div>
+              );
+            })
           ) : (
             <EmptyState
               onRefresh={refetch}

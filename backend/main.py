@@ -81,6 +81,12 @@ def get_current_user_id(token: str = Depends(oauth2_scheme)):
         user_id = payload.get("user_id")
         if user_id is None:
             raise HTTPException(status_code=401, detail="Invalid token payload")
+        
+        # HONEYPOT: Check if user is banned
+        user = supabase.table("users").select("is_banned").eq("id", user_id).execute()
+        if user.data and user.data[0].get("is_banned"):
+             raise HTTPException(status_code=403, detail="Account Suspended (Bot Detected)")
+
         return user_id
     except jwt.ExpiredSignatureError:
         raise HTTPException(status_code=401, detail="Token expired")
@@ -239,7 +245,20 @@ def cast_vote(vote: VoteRequest, user_id: str = Depends(get_current_user_id)):
         user_res = supabase.table("users").select("trust_score").eq("id", user_id).execute()
         trust_score = user_res.data[0]['trust_score']
 
-        # B. Insert Vote
+        # B. Check for TRAP RUMOR (Honeypot)
+        rumor_res = supabase.table("rumors").select("is_trap").eq("id", vote.rumor_id).execute()
+        if rumor_res.data and rumor_res.data[0].get("is_trap"):
+            print(f"🚨 BOT TRAPPED! User {user_id} voted on hidden rumor {vote.rumor_id}")
+            # BAN THE BOT
+            supabase.table("users").update({
+                "is_banned": True, 
+                "trust_score": -1.0
+            }).eq("id", user_id).execute()
+            
+            # GASLIGHTING: Return success so the bot doesn't know it failed
+            return {"message": "Vote Weighted & Recorded", "weight_applied": trust_score}
+
+        # C. Insert Vote
         data = {
             "user_id": user_id,
             "rumor_id": vote.rumor_id,
@@ -398,6 +417,16 @@ def get_stats():
         "trust_vector": 0.8501,
         "is_demo_mode": False
     }
+
+# 8. SYSTEM STATS
+# ... (existing stats endpoint)
+
+@app.get("/api/graph")
+def get_graph_data():
+    """
+    Returns the node/link data for the visualization.
+    """
+    return engine.get_graph_visual_data()
 
 # --- INTERNAL HELPERS ---
 def update_rumor_status(rumor_id: str):
