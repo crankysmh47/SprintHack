@@ -152,9 +152,35 @@ class TrustEngine:
         # If More people voted True than was predicted -> TRUE
         # If Fewer people voted True than was predicted -> FALSE
         
-        # We verify if confidence is high enough
-        THRESHOLD = 0.05 
+        # TIERED VERIFICATION LOGIC
+        # 1. Determine Tier based on Vote Count
+        vote_count = len(votes)
         
+        # Tier Definition:
+        # Tier 1 (Circle): < 20 votes. Needs High Consensus.
+        # Tier 2 (Neighbor): 20-50 votes. Needs Medium Consensus.
+        # Tier 3 (Global): > 50 votes. Standard SP.
+        
+        tier = "CIRCLE"
+        min_votes_required = 5
+        
+        if vote_count >= 50:
+            tier = "GLOBAL"
+            min_votes_required = 50
+        elif vote_count >= 20:
+            tier = "NEIGHBOR"
+            min_votes_required = 20
+            
+        # 2. Check Min Votes
+        if vote_count < min_votes_required:
+             return {
+                "status": "pending",
+                "message": f"Need {min_votes_required - vote_count} more votes for {tier} verification",
+                "verified_result": None,
+                "trust_score": 0.0,
+                "stats": {"total": vote_count, "tier": tier}
+            }
+
         if delta > THRESHOLD:
             result = True
             status = "verified"

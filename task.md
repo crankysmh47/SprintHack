@@ -26,5 +26,8 @@
         - [x] Database: Create `comments` table (SQL ready).
         - [x] Backend: POST /api/comments and GET /api/comments.
         - [ ] Frontend: Comments UI and integration.
+    - [x] **Game Logic & Rules (New)**:
+        - [x] **Verification Tiers**: Implement vote count thresholds per stage (Circle/Neighbor/Global) in `trust_engine.py`.
+        - [x] **Invite Privileges**: Enforce `Trust Score > 0.7` for generating invite codes.
     - [ ] **Phase 2: Advanced Features**:
         - [ ] Truth Seeker & Liar Roles.

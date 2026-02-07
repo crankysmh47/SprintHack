@@ -16,6 +16,7 @@ import { cn, formatTimeAgo, triggerHaptic } from '@/lib/utils';
 import { TrustBadge } from './TrustBadge';
 import { SwipeIndicator } from './SwipeIndicator';
 import { PredictionSlider } from './PredictionSlider';
+import { CommentsSection } from './CommentsSection';
 
 // ── Stage configuration ─────────────────────────────────
 const STAGE_CONFIG = {
@@ -41,9 +42,10 @@ interface RumorCardProps {
   rumor: Rumor;
   onVote: (direction: SwipeDirection, prediction: number) => void;
   isTop?: boolean;
+  defaultOpenComments?: boolean;
 }
 
-export function RumorCard({ rumor, onVote, isTop = true }: RumorCardProps) {
+export function RumorCard({ rumor, onVote, isTop = true, defaultOpenComments = false }: RumorCardProps) {
   const [phase, setPhase] = useState<'swipe' | 'predict'>('swipe');
   const [swipeDirection, setSwipeDirection] = useState<SwipeDirection>(null);
   const [isExiting, setIsExiting] = useState(false);
@@ -240,28 +242,11 @@ export function RumorCard({ rumor, onVote, isTop = true }: RumorCardProps) {
         </div>
       )}
 
-      {/* ── Button fallbacks ─────────────────────────── */}
-      <div className="relative z-10 flex border-t border-border bg-card/50 backdrop-blur-sm">
-        <button
-          onClick={() => handleButtonVote('left')}
-          className="flex-1 flex items-center justify-center gap-2 py-4
-                     text-red-500 font-bold hover:bg-red-500/10
-                     transition active:scale-95"
-        >
-          <X size={20} strokeWidth={3} />
-          FALSE
-        </button>
-        <div className="w-px bg-border" />
-        <button
-          onClick={() => handleButtonVote('right')}
-          className="flex-1 flex items-center justify-center gap-2 py-4
-                     text-emerald-500 font-bold hover:bg-emerald-500/10
-                     transition active:scale-95"
-        >
-          <Check size={20} strokeWidth={3} />
-          TRUE
-        </button>
-      </div>
+      {/* ── Comments Section ── */}
+      <CommentsSection rumorId={rumor.id} defaultOpen={defaultOpenComments} />
+
+      <div className="absolute inset-y-0 left-0 w-1 bg-gradient-to-r from-red-500/40 to-transparent pointer-events-none z-20" />
+      <div className="absolute inset-y-0 right-0 w-1 bg-gradient-to-l from-emerald-500/40 to-transparent pointer-events-none z-20" />
     </motion.div>
   );
 }

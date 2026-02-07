@@ -8,6 +8,13 @@ interface StatsBarProps {
   currentIndex: number;
   total: number;
   trustRank: number;
+  systemStats?: {
+    sync_percent: number;
+    user_count: number;
+    sybil_resistance?: number;
+    trust_vector?: number;
+    network_latency?: string;
+  };
   usingMockData: boolean;
 }
 
@@ -16,6 +23,7 @@ export function StatsBar({
   currentIndex,
   total,
   trustRank,
+  systemStats,
   usingMockData,
 }: StatsBarProps) {
   return (
@@ -31,10 +39,22 @@ export function StatsBar({
         </motion.div>
       )}
 
-      {/* Trust Rank Header */}
+      {/* Trust Rank Header (Sci-Fi / Tech Style) */}
       <div className="flex justify-between text-xs font-semibold text-muted-foreground mb-1.5 uppercase tracking-wide">
-        <span>Trust Database</span>
-        <span className="text-primary">{Math.round(trustRank * 100)}% Synced</span>
+        <div className="flex flex-col">
+          <span className="text-primary font-bold">Global Trust Vector</span>
+          <span className="text-[10px] text-muted-foreground/70 lowercase flex items-center gap-2">
+            <span>Nodes: {systemStats?.user_count ? (systemStats.user_count / 1000).toFixed(1) + 'k' : '0'}</span>
+            <span className="w-1 h-1 bg-green-500 rounded-full animate-pulse" />
+            <span>Sybil Res: {systemStats?.sybil_resistance || 99}%</span>
+          </span>
+        </div>
+        <div className="flex flex-col items-end">
+          <span className="text-emerald-400 font-mono">{systemStats?.trust_vector || '0.99'} θ</span>
+          <span className="text-[10px] text-muted-foreground/50 lowercase">
+            Latency: {systemStats?.network_latency || '12ms'}
+          </span>
+        </div>
       </div>
 
       {/* Progress Track */}

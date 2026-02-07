@@ -6,9 +6,10 @@ import { motion } from 'framer-motion';
 interface RumorFeedItemProps {
     rumor: Rumor;
     onClick: () => void;
+    onDiscuss?: () => void;
 }
 
-export function RumorFeedItem({ rumor, onClick }: RumorFeedItemProps) {
+export function RumorFeedItem({ rumor, onClick, onDiscuss }: RumorFeedItemProps) {
     // Simple time formatter if date-fns isn't installed, but let's try native Intl.RelativeTimeFormat later if needed.
     // For now, let's just use a simple string logic or assume robust Date parsing.
     const timeAgo = new Date(rumor.created_at).toLocaleDateString(undefined, {
@@ -61,7 +62,13 @@ export function RumorFeedItem({ rumor, onClick }: RumorFeedItemProps) {
 
                     {/* Footer Actions */}
                     <div className="flex items-center gap-4 pt-2">
-                        <button className="flex items-center gap-1.5 text-xs font-medium text-muted-foreground hover:bg-secondary/50 px-2 py-1.5 rounded-md transition-colors">
+                        <button
+                            onClick={(e) => {
+                                e.stopPropagation(); // Prevent opening modal twice or wrong state
+                                onDiscuss?.();
+                            }}
+                            className="flex items-center gap-1.5 text-xs font-medium text-muted-foreground hover:bg-secondary/50 px-2 py-1.5 rounded-md transition-colors"
+                        >
                             <MessageSquare size={16} />
                             <span>Discuss</span>
                         </button>

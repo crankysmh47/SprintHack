@@ -31,6 +31,7 @@ export default function Home() {
   const [showPostModal, setShowPostModal] = useState(false);
   const [mounted, setMounted] = useState(false);
   const [selectedRumor, setSelectedRumor] = useState<Rumor | null>(null);
+  const [autoOpenComments, setAutoOpenComments] = useState(false);
 
   // V2 Auth State
   const [view, setView] = useState<'landing' | 'feed'>('landing');
@@ -58,6 +59,7 @@ export default function Home() {
     loading,
     usingMockData,
     userTrustRank,
+    globalStats,
     progress,
     refetch,
   } = useRumors(userId);
@@ -177,6 +179,7 @@ export default function Home() {
             currentIndex={0}
             total={rumors.length}
             trustRank={userTrustRank}
+            systemStats={globalStats}
             usingMockData={usingMockData}
           />
         </div>
@@ -188,7 +191,14 @@ export default function Home() {
               <div key={rumor.id} className="rumor-feed-item opacity-0">
                 <RumorFeedItem
                   rumor={rumor}
-                  onClick={() => setSelectedRumor(rumor)}
+                  onClick={() => {
+                    setSelectedRumor(rumor);
+                    setAutoOpenComments(false);
+                  }}
+                  onDiscuss={() => {
+                    setSelectedRumor(rumor);
+                    setAutoOpenComments(true);
+                  }}
                 />
               </div>
             ))
@@ -238,6 +248,7 @@ export default function Home() {
                 rumor={selectedRumor}
                 onVote={handleVoteV2} // INJECTING V2 LOGIC HERE
                 isTop={true}
+                defaultOpenComments={autoOpenComments}
               />
             </motion.div>
           </motion.div>
