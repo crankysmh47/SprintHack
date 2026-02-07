@@ -468,9 +468,19 @@ def get_graph_data():
     Returns the node/link data for the visualization.
     """
     try:
-        return engine.get_graph_visual_data()
+        # Force rebuild if graph is empty
+        if not engine.graph or len(engine.graph.nodes()) == 0:
+            print("🔄 Graph is empty, rebuilding...")
+            engine.build_trust_graph()
+            engine.calculate_trust_ranks()
+        
+        result = engine.get_graph_visual_data()
+        print(f"✅ Returning graph with {len(result['nodes'])} nodes, {len(result['links'])} links")
+        return result
     except Exception as e:
-        print(f"Graph Error: {e}")
+        print(f"❌ Graph Error: {e}")
+        import traceback
+        traceback.print_exc()
         # Return empty graph if there's an error
         return {"nodes": [], "links": []}
 
@@ -478,3 +488,20 @@ def get_graph_data():
 def update_rumor_status(rumor_id: str):
     # Call the math engine
     engine.resolve_rumor(rumor_id)
+
+# --- STARTUP EVENT ---
+@app.on_event("startup")
+async def startup_event():
+    """
+    Build the trust graph on server startup.
+    """
+    print("\n" + "="*50)
+    print("🚀 INITIALIZING TRUST ENGINE")
+    print("="*50)
+    try:
+        engine.build_trust_graph()
+        engine.calculate_trust_ranks()
+        print("✅ Trust graph initialized successfully")
+    except Exception as e:
+        print(f"⚠️ Warning: Could not build initial graph: {e}")
+    print("="*50 + "\n")

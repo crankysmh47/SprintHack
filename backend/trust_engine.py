@@ -229,10 +229,23 @@ class TrustEngine:
         if not self.trust_ranks:
             self.calculate_trust_ranks()
 
-        GENESIS_IDS = [
-            "d8c20526-0158-45b6-993d-9d41334c0628", # Example Admin 1
-            "123e4567-e89b-12d3-a456-426614174000"  # Example Admin 2
-        ]
+        # Dynamically fetch Genesis users from database
+        # Genesis users are those with invited_by=NULL (no inviter) or username='genesis'
+        genesis_ids = set()
+        try:
+            # Fetch users with no inviter (genesis users)
+            response = supabase.table("users").select("id").is_("invited_by", "null").execute()
+            genesis_ids.update([user["id"] for user in response.data])
+            
+            # Also fetch user named 'genesis' explicitly
+            genesis_user = supabase.table("users").select("id").eq("username", "genesis").execute()
+            if genesis_user.data:
+                genesis_ids.update([user["id"] for user in genesis_user.data])
+            
+            print(f"🌟 Found {len(genesis_ids)} genesis users: {genesis_ids}")
+        except Exception as e:
+            print(f"⚠️ Error fetching genesis users: {e}")
+            genesis_ids = set()
 
         nodes = []
         links = []
@@ -242,7 +255,7 @@ class TrustEngine:
             score = self.trust_ranks.get(node_id, 0.0)
             
             node_type = "LOW_TRUST"
-            if node_id in GENESIS_IDS:
+            if node_id in genesis_ids:
                 node_type = "GENESIS"
             elif score > 0.0005: 
                 node_type = "HIGH_TRUST"
@@ -257,7 +270,9 @@ class TrustEngine:
         for u, v in self.graph.edges():
             links.append({"source": u, "target": v})
 
+        print(f"📊 Returning graph data: {len(nodes)} nodes, {len(links)} links")
         return {"nodes": nodes, "links": links}
 
 # Global Instance
 engine = TrustEngine()
+
