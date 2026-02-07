@@ -47,7 +47,7 @@ export function LandingPage({ onJoin }: LandingProps) {
             const ctx = gsap.context(() => {
                 // Title animation - stagger entrance
                 const titleLines = titleRef.current?.querySelectorAll('.title-line');
-                gsap.fromTo(titleLines, 
+                gsap.fromTo(titleLines,
                     {
                         y: 120,
                         opacity: 0,
@@ -264,6 +264,7 @@ export function LandingPage({ onJoin }: LandingProps) {
             localStorage.setItem('token', data.token);
             if (data.invite_code) localStorage.setItem('invite_code', data.invite_code);
             localStorage.setItem('trust_score', '0.5');
+            if (data.is_genesis_member) localStorage.setItem('is_genesis_member', 'true');
 
             onJoin(data.user_id, tempKeys);
 
@@ -291,6 +292,7 @@ export function LandingPage({ onJoin }: LandingProps) {
             localStorage.setItem('token', data.token);
             if (data.invite_code) localStorage.setItem('invite_code', data.invite_code);
             if (data.trust_score !== undefined) localStorage.setItem('trust_score', data.trust_score.toString());
+            if (data.is_genesis_member) localStorage.setItem('is_genesis_member', 'true');
 
             let privKey = null;
             let pubKey = null;
@@ -338,16 +340,16 @@ export function LandingPage({ onJoin }: LandingProps) {
                             >
                                 {/* Animated background */}
                                 <div className="absolute inset-0 bg-gradient-to-br from-blue-600 via-blue-700 to-blue-800 opacity-100 group-hover:opacity-90 transition-all duration-300 rounded-2xl" />
-                                
+
                                 {/* Shimmer */}
                                 <div className="absolute inset-0 w-full h-full bg-gradient-to-r from-transparent via-white to-transparent opacity-0 group-hover:opacity-20 -translate-x-full group-hover:translate-x-full transition-all duration-1000 rounded-2xl" />
-                                
+
                                 {/* Glow */}
                                 <div className="absolute -inset-1 bg-gradient-to-r from-blue-600 to-blue-500 rounded-2xl blur opacity-0 group-hover:opacity-75 transition-opacity duration-500 -z-10" />
-                                
+
                                 {/* Border */}
                                 <div className="absolute inset-0 rounded-2xl border-2 border-blue-400/50 opacity-0 group-hover:opacity-100 transition-opacity" />
-                                
+
                                 <div className="z-10 flex flex-col items-center w-full">
                                     <UserPlus size={48} className="group-hover:scale-125 transition-transform duration-300 group-hover:drop-shadow-lg" />
                                     <span className="font-bold text-xl mt-2 block">New Node</span>
@@ -362,16 +364,16 @@ export function LandingPage({ onJoin }: LandingProps) {
                             >
                                 {/* Animated background */}
                                 <div className="absolute inset-0 bg-gradient-to-br from-slate-700 via-slate-800 to-slate-900 opacity-100 group-hover:opacity-90 transition-all duration-300 rounded-2xl" />
-                                
+
                                 {/* Shimmer */}
                                 <div className="absolute inset-0 w-full h-full bg-gradient-to-r from-transparent via-white to-transparent opacity-0 group-hover:opacity-15 -translate-x-full group-hover:translate-x-full transition-all duration-1000 rounded-2xl" />
-                                
+
                                 {/* Glow */}
                                 <div className="absolute -inset-1 bg-gradient-to-r from-slate-600 to-slate-500 rounded-2xl blur opacity-0 group-hover:opacity-50 transition-opacity duration-500 -z-10" />
-                                
+
                                 {/* Border */}
                                 <div className="absolute inset-0 rounded-2xl border-2 border-white/30 opacity-0 group-hover:opacity-100 transition-opacity" />
-                                
+
                                 <div className="z-10 flex flex-col items-center w-full">
                                     <LogIn size={48} className="group-hover:scale-125 transition-transform duration-300 group-hover:drop-shadow-lg" />
                                     <span className="font-bold text-xl mt-2 block">Login</span>

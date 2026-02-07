@@ -30,4 +30,8 @@
         - [x] **Verification Tiers**: Implement vote count thresholds per stage (Circle/Neighbor/Global) in `trust_engine.py`.
         - [x] **Invite Privileges**: Enforce `Trust Score > 0.7` for generating invite codes.
     - [ ] **Phase 2: Advanced Features**:
+        - [ ] **Pagination & Sorting**:
+            - [ ] Backend: Support `skip`, `limit`, `sort_by` in `/api/rumors`.
+            - [ ] Frontend: Top 10 rumors per page.
+            - [ ] Frontend: Sorting controls (Popularity, Relevance, Lateness).
         - [ ] Truth Seeker & Liar Roles.

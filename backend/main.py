@@ -170,7 +170,8 @@ def register(req: RegisterRequest):
             "message": "Welcome to the Verified Network",
             "token": token,
             "user_id": new_user_id,
-            "invite_code": new_user['invite_code']
+            "invite_code": new_user['invite_code'],
+            "is_genesis_member": (req.invite_code == "GENESIS")
         }
 
     except HTTPException as he:
@@ -206,6 +207,16 @@ def login(req: LoginRequest):
         "exp": datetime.utcnow() + timedelta(days=ACCESS_TOKEN_EXPIRE_DAYS)
     }, SECRET_KEY, algorithm=ALGORITHM)
 
+    # E. Check Genesis Status
+    is_genesis_member = False
+    if user['username'] == 'genesis':
+        is_genesis_member = True
+    elif user.get('invited_by'):
+        # Check if inviter is genesis
+        inviter_res = supabase.table("users").select("username").eq("id", user['invited_by']).execute()
+        if inviter_res.data and inviter_res.data[0]['username'] == 'genesis':
+            is_genesis_member = True
+
     return {
         "token": token,
         "user_id": user['id'],
@@ -213,7 +224,8 @@ def login(req: LoginRequest):
         "trust_score": user['trust_score'],
         "invite_code": user['invite_code'],
         "public_key": user.get('public_key'),
-        "encrypted_priv_key": user.get('encrypted_priv_key')
+        "encrypted_priv_key": user.get('encrypted_priv_key'),
+        "is_genesis_member": is_genesis_member
     }
 
 # 3. WEIGHTED VOTE
@@ -265,10 +277,37 @@ def verify_rumor_endpoint(rumor_id: str, verified_as: bool):
 
 # 5. FEED & RUMORS
 @app.get("/api/feed")
-def get_feed(user_id: Optional[str] = None):
-    # Retrieve rumors.
-    res = supabase.table("rumors").select("*").order("created_at", desc=True).limit(50).execute()
-    return {"rumors": res.data}
+def get_feed(user_id: Optional[str] = None, page: int = 1, limit: int = 10, sort: str = "popularity"):
+    # Calculate offset
+    offset = (page - 1) * limit
+
+    # Build Query
+    query = supabase.table("rumors").select("*", count="exact")
+
+    # Sorting Logic
+    if sort == "latest":
+        query = query.order("created_at", desc=True)
+    elif sort == "popularity":
+        # Sort by vote_count (desc), then latest
+        query = query.order("vote_count", desc=True).order("created_at", desc=True)
+    elif sort == "relevance":
+        # Sort by trust_score (desc), then latest
+        query = query.order("trust_score", desc=True).order("created_at", desc=True)
+    else:
+        # Default fallback
+        query = query.order("vote_count", desc=True)
+
+    # Pagination
+    query = query.range(offset, offset + limit - 1)
+    
+    res = query.execute()
+    
+    return {
+        "rumors": res.data,
+        "total": res.count,
+        "page": page,
+        "limit": limit
+    }
 
 @app.post("/api/rumor")
 def create_rumor(rumor: RumorRequest, user_id: str = Depends(get_current_user_id)):

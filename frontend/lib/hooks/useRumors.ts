@@ -2,21 +2,29 @@ import { useState, useEffect, useCallback } from 'react';
 import { Rumor } from '../types';
 import { api } from '../api';
 
+export type SortOption = 'latest' | 'popularity' | 'relevance';
+
 export function useRumors(userId: string | null) {
     const [rumors, setRumors] = useState<Rumor[]>([]);
     const [loading, setLoading] = useState(false);
-    const [usingMockData, setUsingMockData] = useState(false);
     const [userTrustRank, setUserTrustRank] = useState(0.5); // Default
     const [globalStats, setGlobalStats] = useState({ sync_percent: 0, user_count: 0 });
+
+    // Pagination & Sorting State
+    const [page, setPage] = useState(1);
+    const [limit] = useState(10);
+    const [sortBy, setSortBy] = useState<SortOption>('popularity');
+    const [totalRumors, setTotalRumors] = useState(0);
 
     const fetchFeed = useCallback(async () => {
         if (!userId) return;
         setLoading(true);
         try {
-            // 1. Fetch Feed
-            const data = await api.get(`/feed?user_id=${userId}`);
+            // 1. Fetch Feed with Pagination & Sorting
+            const data = await api.get(`/feed?user_id=${userId}&page=${page}&limit=${limit}&sort=${sortBy}`);
             if (data.rumors) {
                 setRumors(data.rumors);
+                if (data.total !== undefined) setTotalRumors(data.total);
             }
 
             // 2. Fetch User Stats (Trust Rank)
@@ -32,7 +40,7 @@ export function useRumors(userId: string | null) {
                 const stats = await api.get(`/stats`);
                 setGlobalStats(stats);
             } catch (e) {
-                console.warn("Could not fetch system stats", e);
+                // Warning suppressed
             }
 
         } catch (err) {
@@ -40,7 +48,7 @@ export function useRumors(userId: string | null) {
         } finally {
             setLoading(false);
         }
-    }, [userId]);
+    }, [userId, page, limit, sortBy]);
 
     useEffect(() => {
         if (userId) {
@@ -48,13 +56,19 @@ export function useRumors(userId: string | null) {
         }
     }, [userId, fetchFeed]);
 
+    const totalPages = Math.ceil(totalRumors / limit);
+
     return {
         rumors,
         loading,
-        usingMockData,
         userTrustRank,
         globalStats,
-        progress: rumors.length > 0 ? 100 : 0,
-        refetch: fetchFeed
+        refetch: fetchFeed,
+        // Pagination & Sorting Controls
+        page,
+        setPage,
+        totalPages,
+        sortBy,
+        setSortBy
     };
 }

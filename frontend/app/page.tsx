@@ -62,6 +62,12 @@ export default function Home() {
     globalStats,
     progress,
     refetch,
+    // Pagination
+    page,
+    setPage,
+    totalPages,
+    sortBy,
+    setSortBy
   } = useRumors(userId);
 
   // V2 Vote Logic (Crypto Signed)
@@ -184,10 +190,25 @@ export default function Home() {
           />
         </div>
 
+        {/* Sorting Controls */}
+        <div className="flex justify-end gap-2 mb-4">
+          <select
+            value={sortBy}
+            onChange={(e) => setSortBy(e.target.value as any)}
+            className="bg-background border border-border rounded-md px-3 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-primary"
+          >
+            <option value="popularity">Most Popular</option>
+            <option value="relevance">Most Relevant</option>
+            <option value="latest">Latest</option>
+          </select>
+        </div>
+
         {/* Feed */}
         <div className="space-y-4">
           {rumors.length > 0 ? (
             rumors.map((rumor) => (
+              // ... existing mapping (unchanged) -> actually I need to preserve the inner code.
+              // Since I'm replacing the block, I must re-include the mapping logic exactly.
               <div key={rumor.id} className="rumor-feed-item opacity-0">
                 <RumorFeedItem
                   rumor={rumor}
@@ -209,6 +230,29 @@ export default function Home() {
             />
           )}
         </div>
+
+        {/* Pagination Controls */}
+        {totalPages > 1 && (
+          <div className="flex justify-center items-center gap-4 mt-8 pb-12">
+            <button
+              onClick={() => setPage(p => Math.max(1, p - 1))}
+              disabled={page === 1}
+              className="px-4 py-2 bg-secondary text-secondary-foreground rounded-md disabled:opacity-50 transition hover:bg-secondary/80"
+            >
+              Previous
+            </button>
+            <span className="text-sm font-mono text-muted-foreground">
+              Page {page} of {totalPages}
+            </span>
+            <button
+              onClick={() => setPage(p => Math.min(totalPages, p + 1))}
+              disabled={page === totalPages}
+              className="px-4 py-2 bg-secondary text-secondary-foreground rounded-md disabled:opacity-50 transition hover:bg-secondary/80"
+            >
+              Next
+            </button>
+          </div>
+        )}
       </main>
 
       {/* FAB: Post Rumor */}

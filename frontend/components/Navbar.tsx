@@ -42,10 +42,11 @@ export function Navbar({ userId, onLogout }: NavbarProps) {
                 {userId.length > 8 ? userId.slice(0, 8) + '…' : userId}
               </span>
 
-              {/* Invite Button (Trusted Only OR Genesis) */}
+              {/* Invite Button (Trusted Only OR Genesis/Genesis-Member) */}
               {(
                 (localStorage.getItem('invite_code') && parseFloat(localStorage.getItem('trust_score') || '0') >= 0.7) ||
-                (userId?.toLowerCase() === 'genesis')
+                (userId?.toLowerCase() === 'genesis') ||
+                (localStorage.getItem('is_genesis_member') === 'true')
               ) && (
                   <button
                     onClick={() => {
