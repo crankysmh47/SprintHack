@@ -57,10 +57,9 @@ export default function Home() {
   const {
     rumors,
     loading,
-    usingMockData,
     userTrustRank,
     globalStats,
-    progress,
+    // progress, // Removed from hook
     refetch,
     // Pagination
     page,
@@ -181,12 +180,12 @@ export default function Home() {
         {/* Stats Header */}
         <div className="mb-6">
           <StatsBar
-            progress={progress}
+            progress={rumors.length > 0 ? 100 : 0}
             currentIndex={0}
             total={rumors.length}
             trustRank={userTrustRank}
             systemStats={globalStats}
-            usingMockData={usingMockData}
+            usingMockData={false}
           />
         </div>
 
