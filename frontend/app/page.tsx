@@ -195,7 +195,7 @@ export default function Home() {
           <select
             value={sortBy}
             onChange={(e) => setSortBy(e.target.value as any)}
-            className="bg-background border border-border rounded-md px-3 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-primary"
+            className="bg-background border border-border rounded-md px-3 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-primary text-foreground"
           >
             <option value="popularity">Most Popular</option>
             <option value="relevance">Most Relevant</option>

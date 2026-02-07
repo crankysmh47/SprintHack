@@ -38,8 +38,8 @@ export function KeyVisualizer({ onComplete }: { onComplete: () => void }) {
     }, []);
 
     return (
-        <div className="w-full max-w-md bg-black font-mono text-green-500 p-6 rounded-lg shadow-2xl border border-green-800">
-            <div className="mb-4 border-b border-green-900 pb-2 flex justify-between">
+        <div className="w-full max-w-md bg-black font-mono text-blue-400 p-6 rounded-lg shadow-2xl border border-zinc-800 shadow-blue-900/20">
+            <div className="mb-4 border-b border-zinc-800 pb-2 flex justify-between">
                 <span>ENCRYPTION_LAYER_V1</span>
                 <span>{Math.round(progress)}%</span>
             </div>
@@ -57,7 +57,7 @@ export function KeyVisualizer({ onComplete }: { onComplete: () => void }) {
                 <motion.div
                     animate={{ opacity: [0, 1, 0] }}
                     transition={{ repeat: Infinity, duration: 0.8 }}
-                    className="w-3 h-5 bg-green-500 inline-block align-middle ml-1"
+                    className="w-3 h-5 bg-blue-500 inline-block align-middle ml-1"
                 />
             </div>
         </div>

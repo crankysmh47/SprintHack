@@ -86,10 +86,6 @@ export default function DashboardPage() {
         const sizeMultiplier = Math.max(1, trustValue * 10000); // Scale up for visibility
         const nodeSize = baseSize + sizeMultiplier;
 
-
-
-
-
         // Colors
         const hexColor = node.type === "GENESIS" ? "#00f3ff"
             : node.type === "HIGH_TRUST" ? "#00ff9d"
@@ -238,8 +234,10 @@ export default function DashboardPage() {
                         backgroundColor="transparent"
                         nodeCanvasObject={paintNode}
                         nodePointerAreaPaint={(node: any, color: string, ctx: CanvasRenderingContext2D) => {
+                            if (!node || !isFinite(node.x) || !isFinite(node.y)) return;
                             const baseSize = 4;
-                            const sizeMultiplier = Math.max(1, node.val * 10000);
+                            const trustValue = (node.val && isFinite(node.val)) ? node.val : 0;
+                            const sizeMultiplier = Math.max(1, trustValue * 10000);
                             const nodeSize = baseSize + sizeMultiplier;
                             ctx.fillStyle = color;
                             ctx.beginPath();

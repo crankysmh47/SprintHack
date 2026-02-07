@@ -182,7 +182,7 @@ export function RumorCard({ rumor, onVote, isTop = true, defaultOpenComments = f
           <StageIcon size={12} />
           {stage.label}
         </div>
-        <TrustBadge score={rumor.trust_score} size="sm" />
+        {/* TrustBadge removed */}
       </div>
 
       {/* ── Verification Banner ─────────────────────── */}
