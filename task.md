@@ -34,7 +34,10 @@
         - [x] **Backend**: Implement `verify_user_status` middleware.
         - [x] **Backend**: Implement Trap Logic in `POST /api/vote`.
         - [x] **Frontend**: Filter out trap rumors in UI.
-    - [ ] **Phase 2: Advanced Features**:
+    - [x] **Phase 2: Advanced Features**:
+    - [ ] **Deployment**:
+          - [x] Leapcell Configuration (Build Type, Start Command).
+          - [x] Dependencies (Added cryptography).
         - [ ] **Pagination & Sorting**:
             - [ ] Backend: Support `skip`, `limit`, `sort_by` in `/api/rumors`.
             - [ ] Frontend: Top 10 rumors per page.
