@@ -25,12 +25,13 @@ RUN pip install --no-cache-dir -r requirements.txt
 COPY backend/ ./backend
 
 # Copy Frontend Build from Stage 1
-COPY --from=frontend-builder /app/frontend/out ./frontend/out
+# Copy Frontend Build from Stage 1 to a clean 'static' folder
+COPY --from=frontend-builder /app/frontend/out /app/static
 
 # Environment Configuration
 ENV PORT=8080
 EXPOSE 8080
 
-# Run FastAPI (which now serves frontend too)
-# Note: We run from root so imports work
-CMD ["uvicorn", "backend.main:app", "--host", "0.0.0.0", "--port", "8080"]
+# Run FastAPI with Debugging
+# We list files before starting to prove they exist
+CMD sh -c "echo '--- DOCKER FILE DEBUG ---' && ls -R /app/static && uvicorn backend.main:app --host 0.0.0.0 --port 8080"

@@ -100,38 +100,43 @@ from fastapi.responses import FileResponse
 from pathlib import Path
 
 # Static Path Resolution
-# Robust Search for Frontend
-found_frontend_dir = None
-print("🔍 Searching for frontend build (index.html)...")
-for root, dirs, files in os.walk("/app"):
-    if "index.html" in files and "_next" in dirs:
-        found_frontend_dir = Path(root)
-        print(f"✅ FOUND Frontend at: {found_frontend_dir}")
-        break
+# Simplified Path - Docker puts it in /app/static
+STATIC_DIR = Path("/app/static")
 
-if found_frontend_dir:
-    FRONTEND_DIR = found_frontend_dir
-    app.mount("/_next", StaticFiles(directory=str(FRONTEND_DIR / "_next")), name="next")
+print(f"📂 Checking for frontend at: {STATIC_DIR}")
+
+# DEBUG: Print file system structure (Keep this for now)
+if not STATIC_DIR.exists():
+    print("⚠️ Static dir not found! printing /app ...")
+    for root, dirs, files in os.walk("/app"):
+         print(f"{root}/")
+
+# Mount Static Files
+if STATIC_DIR.exists():
+    print("✅ Frontend found at /app/static! Mounting...")
+    # Mount _next first
+    if (STATIC_DIR / "_next").exists():
+        app.mount("/_next", StaticFiles(directory=str(STATIC_DIR / "_next")), name="next")
     
     @app.get("/")
     async def serve_index():
-        return FileResponse(str(FRONTEND_DIR / "index.html"))
+        return FileResponse(str(STATIC_DIR / "index.html"))
 
     # Catch-all for SPA handling
     @app.exception_handler(404)
     async def custom_404_handler(_, __):
-        return FileResponse(str(FRONTEND_DIR / "index.html"))
+        return FileResponse(str(STATIC_DIR / "index.html"))
 
 else:
-    print("❌ Critical: Frontend NOT found in /app recursive search.")
+    print("❌ Critical: Frontend NOT found in /app/static.")
     # Fallback
     @app.get("/")
     def root_fallback():
         return {
             "status": "active", 
             "mode": "api_only",
-            "message": "Frontend not found after recursive search.",
-            "search_path": "/app"
+            "message": "Frontend not found in /app/static. Check Docker build.",
+            "search_path": str(STATIC_DIR)
         }
 
 @app.get("/api/health")
