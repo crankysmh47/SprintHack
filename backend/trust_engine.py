@@ -6,6 +6,11 @@ import math
 
 load_dotenv()
 
+# Surprisingly Popular Algorithm Threshold
+# If delta > THRESHOLD, rumor is verified TRUE
+# If delta < -THRESHOLD, rumor is DISPUTED
+THRESHOLD = 0.05  # 5% difference threshold
+
 # Initialize Supabase Client
 # Note: In a real scenario, ensure SUPABASE_URL and SUPABASE_KEY are set in .env
 url = os.getenv("SUPABASE_URL", "https://placeholder.supabase.co")

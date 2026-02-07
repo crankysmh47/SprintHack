@@ -89,7 +89,8 @@ export default function Home() {
         public_key: pubKeyStr
       };
 
-      const res = await fetch('/api/vote', {
+      const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api';
+      const res = await fetch(`${API_URL}/vote`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

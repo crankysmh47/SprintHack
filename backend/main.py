@@ -12,8 +12,9 @@ import jwt
 from datetime import datetime, timedelta
 
 # Import our Math Engine and Crypto
-from .trust_engine import engine
-from .crypto_utils import verify_signature
+import trust_engine
+import crypto_utils
+engine = trust_engine.engine
 
 load_dotenv()
 
@@ -106,38 +107,34 @@ STATIC_DIR = Path("/app/static")
 print(f"📂 Checking for frontend at: {STATIC_DIR}")
 
 # DEBUG: Print file system structure (Keep this for now)
-if not STATIC_DIR.exists():
-    print("⚠️ Static dir not found! printing /app ...")
-    for root, dirs, files in os.walk("/app"):
-         print(f"{root}/")
+try:
+    if not STATIC_DIR.exists():
+        print("⚠️ Static dir not found! Skipping frontend mounting (OK for local dev)")
+    else:
+        print("✅ Frontend found at /app/static! Mounting...")
+        # Mount _next first
+        if (STATIC_DIR / "_next").exists():
+            app.mount("/_next", StaticFiles(directory=str(STATIC_DIR / "_next")), name="next")
+        
+        @app.get("/")
+        async def serve_index():
+            return FileResponse(str(STATIC_DIR / "index.html"))
 
-# Mount Static Files
-if STATIC_DIR.exists():
-    print("✅ Frontend found at /app/static! Mounting...")
-    # Mount _next first
-    if (STATIC_DIR / "_next").exists():
-        app.mount("/_next", StaticFiles(directory=str(STATIC_DIR / "_next")), name="next")
-    
-    @app.get("/")
-    async def serve_index():
-        return FileResponse(str(STATIC_DIR / "index.html"))
+        # Catch-all for SPA handling
+        @app.exception_handler(404)
+        async def custom_404_handler(_, __):
+            return FileResponse(str(STATIC_DIR / "index.html"))
+except Exception as e:
+    print(f"⚠️ Static file mounting skipped: {e} (OK for local dev)")
 
-    # Catch-all for SPA handling
-    @app.exception_handler(404)
-    async def custom_404_handler(_, __):
-        return FileResponse(str(STATIC_DIR / "index.html"))
-
-else:
-    print("❌ Critical: Frontend NOT found in /app/static.")
-    # Fallback
-    @app.get("/")
-    def root_fallback():
-        return {
-            "status": "active", 
-            "mode": "api_only",
-            "message": "Frontend not found in /app/static. Check Docker build.",
-            "search_path": str(STATIC_DIR)
-        }
+# Fallback root route for API-only mode
+@app.get("/")
+def root_fallback():
+    return {
+        "status": "active", 
+        "mode": "api_only",
+        "message": "Backend API is running. Frontend at http://localhost:3000"
+    }
 
 @app.get("/api/health")
 def health_check():
@@ -470,7 +467,12 @@ def get_graph_data():
     """
     Returns the node/link data for the visualization.
     """
-    return engine.get_graph_visual_data()
+    try:
+        return engine.get_graph_visual_data()
+    except Exception as e:
+        print(f"Graph Error: {e}")
+        # Return empty graph if there's an error
+        return {"nodes": [], "links": []}
 
 # --- INTERNAL HELPERS ---
 def update_rumor_status(rumor_id: str):

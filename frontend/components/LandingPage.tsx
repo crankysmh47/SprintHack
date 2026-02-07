@@ -562,12 +562,12 @@ export function LandingPage({ onJoin }: LandingProps) {
                     <div ref={titleRef} className="space-y-2 perspective">
                         <h1 className="title-line text-7xl md:text-8xl font-black tracking-tighter leading-none">
                             <span className="inline-block bg-gradient-to-r from-white via-blue-200 to-white bg-clip-text text-transparent">
-                                ZERO
+                                BLACK
                             </span>
                         </h1>
                         <h1 className="title-line text-7xl md:text-8xl font-black tracking-tighter leading-none">
                             <span className="inline-block bg-gradient-to-r from-white via-blue-300 to-white bg-clip-text text-transparent">
-                                TRUST
+                                BOX
                             </span>
                         </h1>
                     </div>

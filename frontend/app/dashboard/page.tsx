@@ -21,7 +21,11 @@ export default function DashboardPage() {
         setLoading(true);
         try {
             const res = await fetch("http://localhost:8000/api/graph");
+            if (!res.ok) {
+                throw new Error(`HTTP ${res.status}: ${res.statusText}`);
+            }
             const graphData = await res.json();
+            console.log("Graph data loaded:", graphData);
             setData(graphData);
 
             // Calculate Stats
@@ -33,7 +37,10 @@ export default function DashboardPage() {
 
             setStats({ total, highTrust, lowTrust, avgTrust: Number(avgTrust) });
         } catch (e) {
-            console.error("Failed to fetch graph data", e);
+            console.error("Failed to fetch graph data:", e);
+            // Set empty data on error
+            setData({ nodes: [], links: [] });
+            setStats({ total: 0, highTrust: 0, lowTrust: 0, avgTrust: 0 });
         } finally {
             setLoading(false);
         }
