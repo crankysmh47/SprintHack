@@ -85,8 +85,11 @@ export function LandingPage({ onJoin }: LandingProps) {
             const data = await res.json();
 
             // Success!
-            // Store Token
+            // Store Token & User Data
             localStorage.setItem('token', data.token);
+            if (data.invite_code) localStorage.setItem('invite_code', data.invite_code);
+            localStorage.setItem('trust_score', '0.5'); // Default start
+
             onJoin(data.user_id, tempKeys);
 
         } catch (e: any) {
@@ -111,8 +114,10 @@ export function LandingPage({ onJoin }: LandingProps) {
             if (!res.ok) throw new Error("Invalid Credentials");
             const data = await res.json();
 
-            // Store Token
+            // Store Token & User Data
             localStorage.setItem('token', data.token);
+            if (data.invite_code) localStorage.setItem('invite_code', data.invite_code);
+            if (data.trust_score !== undefined) localStorage.setItem('trust_score', data.trust_score.toString());
 
             // B. Decrypt Private Key (if exists)
             let privKey = null;

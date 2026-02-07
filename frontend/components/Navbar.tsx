@@ -1,4 +1,4 @@
-import { Fingerprint, LogOut, Moon, Sun } from 'lucide-react';
+import { Fingerprint, LogOut, Moon, Sun, UserPlus } from 'lucide-react';
 import { useTheme } from "next-themes";
 import { useEffect, useState } from "react";
 
@@ -41,6 +41,26 @@ export function Navbar({ userId, onLogout }: NavbarProps) {
               <span className="hidden sm:inline-block text-xs text-slate-400 font-mono bg-slate-100 dark:bg-slate-800 dark:text-slate-300 px-2 py-1 rounded-md">
                 {userId.length > 8 ? userId.slice(0, 8) + '…' : userId}
               </span>
+
+              {/* Invite Button (Trusted Only OR Genesis) */}
+              {(
+                (localStorage.getItem('invite_code') && parseFloat(localStorage.getItem('trust_score') || '0') >= 0.7) ||
+                (userId?.toLowerCase() === 'genesis')
+              ) && (
+                  <button
+                    onClick={() => {
+                      const code = localStorage.getItem('invite_code');
+                      const url = `${window.location.origin}?invite=${code}`;
+                      navigator.clipboard.writeText(url);
+                      alert(`Invite Link Copied!\nCode: ${code}`);
+                    }}
+                    className="p-2 text-emerald-500 hover:text-emerald-400 hover:bg-emerald-500/10 rounded-full transition"
+                    title="Copy Invite Link"
+                  >
+                    <UserPlus size={18} />
+                  </button>
+                )}
+
               <button
                 onClick={onLogout}
                 className="p-2 text-slate-400 hover:text-red-500 transition rounded-full hover:bg-slate-100 dark:hover:bg-slate-800"

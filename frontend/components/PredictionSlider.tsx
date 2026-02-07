@@ -37,6 +37,7 @@ export function PredictionSlider({
   const insight = getInsight();
 
   return (
+
     <motion.div
       initial={{ scale: 0.9, opacity: 0, y: 20 }}
       animate={{ scale: 1, opacity: 1, y: 0 }}
@@ -44,101 +45,132 @@ export function PredictionSlider({
       transition={{ type: 'spring', damping: 20, stiffness: 300 }}
       className="w-full max-w-sm"
     >
-      <div className="bg-white rounded-2xl shadow-2xl overflow-hidden border border-slate-100">
+      <div className="bg-card/90 backdrop-blur-xl rounded-3xl shadow-2xl overflow-hidden border border-border/50 ring-1 ring-white/5">
         {/* Header */}
         <div
           className={cn(
-            'px-6 py-4 text-center',
+            'relative px-6 py-6 text-center overflow-hidden',
             direction === 'right'
-              ? 'bg-gradient-to-r from-emerald-500 to-emerald-600'
-              : 'bg-gradient-to-r from-red-500 to-red-600'
+              ? 'bg-emerald-500/10'
+              : 'bg-red-500/10'
           )}
         >
-          <p className="text-white/80 text-sm font-medium">You voted</p>
-          <p className="text-white text-2xl font-black tracking-tight">{voteLabel}</p>
+          {/* Ambient Glow */}
+          <div className={cn(
+            'absolute inset-0 opacity-40 blur-3xl pointer-events-none',
+            direction === 'right' ? 'bg-emerald-500' : 'bg-red-500'
+          )} />
+
+          <div className="relative z-10">
+            <p className="text-muted-foreground text-xs font-bold uppercase tracking-widest mb-1">You Voted</p>
+            <p className={cn(
+              "text-3xl font-black tracking-tighter",
+              direction === 'right' ? 'text-emerald-400 drop-shadow-[0_0_10px_rgba(52,211,153,0.5)]' : 'text-red-400 drop-shadow-[0_0_10px_rgba(248,113,113,0.5)]'
+            )}>
+              {voteLabel}
+            </p>
+          </div>
         </div>
 
         {/* Body */}
-        <div className="p-6 space-y-6">
-          <div className="text-center space-y-1">
-            <div className="flex items-center justify-center gap-2 text-slate-700">
-              <Users size={20} />
-              <h3 className="text-lg font-bold">The Prediction</h3>
+        <div className="p-6 space-y-8">
+          <div className="text-center space-y-2">
+            <div className="flex items-center justify-center gap-2 text-foreground/80">
+              <Users size={18} />
+              <h3 className="text-sm font-bold uppercase tracking-wider">Predict the Consensus</h3>
             </div>
-            <p className="text-slate-500 text-sm">
-              What % of students do you think will also vote <strong>{voteLabel}</strong>?
+            <p className="text-muted-foreground text-sm leading-relaxed px-4">
+              What percentage of the network will agree with you?
             </p>
           </div>
 
           {/* Slider */}
-          <div className="space-y-3">
-            <div className="flex justify-between text-xs font-semibold text-slate-400 px-1">
-              <span>Only me</span>
-              <span>Everyone</span>
+          <div className="space-y-6">
+
+            <div className="relative h-20 flex items-center justify-center">
+              {/* Big number */}
+              <motion.div
+                key={prediction}
+                initial={{ scale: 1.1 }}
+                animate={{ scale: 1 }}
+                className="text-center"
+              >
+                <span className="text-6xl font-black text-foreground tracking-tighter tabular-nums">
+                  {prediction}
+                </span>
+                <span className="text-2xl font-bold text-muted-foreground ml-1">%</span>
+              </motion.div>
             </div>
 
-            <div className="relative">
+            <div className="relative py-2">
+              {/* Track Background */}
+              <div className="absolute top-1/2 left-0 right-0 h-2 bg-secondary rounded-full -translate-y-1/2 overflow-hidden">
+                <div
+                  className={cn("h-full transition-all duration-100 ease-out opacity-50", direction === 'right' ? 'bg-emerald-500' : 'bg-red-500')}
+                  style={{ width: `${prediction}%` }}
+                />
+              </div>
+
               <input
                 type="range"
                 min="0"
                 max="100"
                 value={prediction}
                 onChange={(e) => setPrediction(parseInt(e.target.value))}
-                className="w-full"
+                className="relative w-full h-8 opacity-0 cursor-pointer z-20"
+              />
+
+              {/* Custom Thumb (Pseudo-element visualizer) */}
+              <div
+                className="absolute top-1/2 -translate-y-1/2 w-6 h-6 bg-white rounded-full shadow-lg border-2 border-primary pointer-events-none z-10 transition-all duration-75"
+                style={{ left: `calc(${prediction}% - 12px)` }}
               />
 
               {/* Tick marks */}
-              <div className="flex justify-between px-1 mt-1">
+              <div className="flex justify-between px-1 mt-4 relative z-0">
                 {[0, 25, 50, 75, 100].map((tick) => (
-                  <div
-                    key={tick}
-                    className={cn(
-                      'w-1 h-1 rounded-full',
-                      prediction >= tick ? 'bg-blue-400' : 'bg-slate-300'
-                    )}
-                  />
+                  <div key={tick} className="flex flex-col items-center gap-1">
+                    <div
+                      className={cn(
+                        'w-1 h-1 rounded-full',
+                        prediction >= tick ? 'bg-primary' : 'bg-muted-foreground/30'
+                      )}
+                    />
+                    <span className="text-[10px] text-muted-foreground font-mono">{tick}</span>
+                  </div>
                 ))}
               </div>
             </div>
 
-            {/* Big number */}
-            <motion.div
-              key={prediction}
-              initial={{ scale: 1.1 }}
-              animate={{ scale: 1 }}
-              className="text-center"
-            >
-              <span className="text-5xl font-black text-slate-800">
-                {prediction}
-              </span>
-              <span className="text-2xl font-bold text-slate-400">%</span>
-            </motion.div>
-
             {/* Insight */}
-            <div className={cn('flex items-center justify-center gap-2 text-sm font-medium', insight.color)}>
-              <insight.icon size={16} />
+            <div className={cn(
+              'flex items-center justify-center gap-2 text-xs font-semibold uppercase tracking-wide py-2 rounded-lg bg-secondary/50',
+              insight.color
+            )}>
+              <insight.icon size={14} />
               <span>{insight.text}</span>
             </div>
           </div>
 
           {/* Buttons */}
-          <div className="flex gap-3">
+          <div className="grid grid-cols-2 gap-3 pt-2">
             <button
               onClick={onCancel}
-              className="flex-1 py-3 rounded-xl font-bold text-slate-500 bg-slate-100 hover:bg-slate-200 transition active:scale-95"
+              className="py-3 rounded-xl font-bold text-muted-foreground bg-secondary hover:bg-secondary/80 transition active:scale-95"
             >
               Back
             </button>
             <button
               onClick={() => onConfirm(predictionForBackend)}
               className={cn(
-                'flex-1 py-3 rounded-xl font-bold text-white transition active:scale-95 shadow-lg',
+                'py-3 rounded-xl font-bold text-black transition active:scale-95 shadow-lg relative overflow-hidden group',
                 direction === 'right'
-                  ? 'bg-emerald-500 hover:bg-emerald-600 shadow-emerald-500/30'
-                  : 'bg-red-500 hover:bg-red-600 shadow-red-500/30'
+                  ? 'bg-emerald-400 hover:bg-emerald-300 shadow-emerald-500/20'
+                  : 'bg-red-400 hover:bg-red-300 shadow-red-500/20'
               )}
             >
-              Confirm Vote
+              <span className="relative z-10">Confirm</span>
+              <div className="absolute inset-0 bg-white/20 translate-y-full group-hover:translate-y-0 transition-transform duration-300" />
             </button>
           </div>
         </div>
