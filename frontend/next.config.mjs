@@ -7,6 +7,10 @@ const nextConfig = {
         ignoreDuringBuilds: true,
     },
     reactStrictMode: true,
+    output: 'export',
+    images: {
+        unoptimized: true,
+    },
     async rewrites() {
         return [
             {

@@ -95,7 +95,44 @@ def get_current_user_id(token: str = Depends(oauth2_scheme)):
 
 # --- ENDPOINTS ---
 
-@app.get("/")
+from fastapi.staticfiles import StaticFiles
+from fastapi.responses import FileResponse
+from pathlib import Path
+
+# Static Path Resolution
+# app/backend/main.py -> app/frontend/out
+BASE_DIR = Path(__file__).resolve().parent
+FRONTEND_DIR = BASE_DIR.parent / "frontend" / "out"
+
+print(f"📂 Checking for frontend at: {FRONTEND_DIR}")
+
+# Mount Static Files if they exist
+if FRONTEND_DIR.exists():
+    print("✅ Frontend found! Mounting...")
+    app.mount("/_next", StaticFiles(directory=str(FRONTEND_DIR / "_next")), name="next")
+    
+    @app.get("/")
+    async def serve_index():
+        return FileResponse(str(FRONTEND_DIR / "index.html"))
+
+    # Catch-all for SPA handling
+    @app.exception_handler(404)
+    async def custom_404_handler(_, __):
+        return FileResponse(str(FRONTEND_DIR / "index.html"))
+
+else:
+    print("⚠️ Frontend NOT found. Running in API-only mode.")
+    # Fallback if frontend build failed or path is wrong
+    @app.get("/")
+    def root_fallback():
+        return {
+            "status": "active", 
+            "mode": "api_only",
+            "message": "Frontend not found. Please check build or path.",
+            "search_path": str(FRONTEND_DIR)
+        }
+
+@app.get("/api/health")
 def health_check():
     return {"status": "active", "version": "v2_professional"}
 
