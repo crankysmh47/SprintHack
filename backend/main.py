@@ -106,6 +106,23 @@ FRONTEND_DIR = BASE_DIR.parent / "frontend" / "out"
 
 print(f"📂 Checking for frontend at: {FRONTEND_DIR}")
 
+# DEBUG: Print file system structure
+print("--- FILE SYSTEM DEBUG ---")
+try:
+    for root, dirs, files in os.walk("/app"):
+        level = root.replace("/app", "").count(os.sep)
+        indent = " " * 4 * (level)
+        print(f"{indent}{os.path.basename(root)}/")
+        subindent = " " * 4 * (level + 1)
+        # Limit file printing to avoid huge logs
+        for f in files[:5]:
+            print(f"{subindent}{f}")
+        if len(files) > 5:
+            print(f"{subindent}... ({len(files)-5} more)")
+except Exception as e:
+    print(f"Could not walk /app: {e}")
+print("-------------------------")
+
 # Mount Static Files if they exist
 if FRONTEND_DIR.exists():
     print("✅ Frontend found! Mounting...")
