@@ -1,4 +1,4 @@
-# 📜 THE SHARED CONTRACT - READ THIS FIRST
+\# 📜 THE SHARED CONTRACT - READ THIS FIRST
 
 **This is the Bible. If everyone follows this exactly, integration will work.**
 
