@@ -248,7 +248,6 @@ class TrustEngine:
             genesis_ids = set()
 
         nodes = []
-        links = []
 
         # 1. Build Nodes
         for node_id in self.graph.nodes():
@@ -267,8 +266,7 @@ class TrustEngine:
             })
 
         # 2. Build Links
-        for u, v in self.graph.edges():
-            links.append({"source": u, "target": v})
+        links = [{"source": u, "target": v} for u, v in self.graph.edges()]
 
         print(f"📊 Returning graph data: {len(nodes)} nodes, {len(links)} links")
         return {"nodes": nodes, "links": links}
